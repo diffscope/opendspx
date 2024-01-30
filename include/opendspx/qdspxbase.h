@@ -17,8 +17,8 @@ namespace QDspx {
         bool mute;
 
         // 构造器
-        Control() : Control(0, false){};
-        Control(double gain, bool mute) : gain(gain), mute(mute){};
+        inline Control() : Control(0, false){};
+        inline Control(double gain, bool mute) : gain(gain), mute(mute){};
     };
 
     // 音轨主控
@@ -27,9 +27,10 @@ namespace QDspx {
         bool solo;
 
         // 构造器
-        TrackControl() : TrackControl(0, false){};
-        TrackControl(double pan, bool solo) : pan(pan), solo(solo){};
-        TrackControl(double gain, double pan, bool mute, bool solo) : Control(gain, mute), pan(pan), solo(solo){};
+        inline TrackControl() : TrackControl(0, false){};
+        inline TrackControl(double pan, bool solo) : pan(pan), solo(solo){};
+        inline TrackControl(double gain, double pan, bool mute, bool solo)
+            : Control(gain, mute), pan(pan), solo(solo){};
     };
 
     // 泛型点
@@ -60,8 +61,8 @@ namespace QDspx {
         Interpolation interp;
 
         // 构造器
-        AnchorPoint() : interp(Linear){};
-        AnchorPoint(int x, int y, Interpolation i = Linear) : IntPoint(x, y), interp(i){};
+        inline AnchorPoint() : interp(Linear){};
+        inline AnchorPoint(int x, int y, Interpolation i = Linear) : IntPoint(x, y), interp(i){};
     };
 
     QAS_JSON_NS(Control)

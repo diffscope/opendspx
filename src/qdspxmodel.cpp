@@ -5,11 +5,11 @@
 
 namespace QDspx {
 
-    bool Model::load(const QString &filename) {
+    ReturnCode Model::load(const QString &filename) {
         // Read file
         QFile file(filename);
         if (!file.open(QIODevice::ReadOnly)) {
-            return false;
+            return {ReturnCode::File, file.error()};
         }
         QByteArray data = file.readAll();
         file.close();
@@ -18,25 +18,28 @@ namespace QDspx {
         QJsonParseError parseError{};
         QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
         if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
-            return false;
+            return ReturnCode::InvalidFormat;
         }
 
         // Deserialize
-        return qAsJsonTryGetClass(doc.object(), this);
+        if (qAsJsonTryGetClass(doc.object(), this))
+            return ReturnCode::Success;
+        
+        return ReturnCode::InvalidFormat;
     }
 
-    bool Model::save(const QString &filename) const {
+    ReturnCode Model::save(const QString &filename) const {
         // Create file
         QFile file(filename);
         if (!file.open(QIODevice::WriteOnly)) {
-            return false;
+            return {ReturnCode::File, file.error()};
         }
 
         // Serialize and write
         file.write(QJsonDocument(qAsClassToJson(*this)).toJson());
         file.close();
 
-        return true;
+        return ReturnCode::Success;
     }
 
 }

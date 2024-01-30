@@ -1,7 +1,7 @@
 #ifndef QDSPXPARAM_H
 #define QDSPXPARAM_H
 
-#include "QDspxBase.h"
+#include <opendspx/qdspxbase.h>
 
 namespace QDspx {
 
@@ -19,7 +19,7 @@ namespace QDspx {
 
         // 构造器
         ParamCurve() : ParamCurve(Anchor){};
-        explicit ParamCurve(Type type) : type(type){};
+        inline explicit ParamCurve(Type type) : type(type){};
         virtual ~ParamCurve() = default;
     };
 
@@ -32,8 +32,8 @@ namespace QDspx {
         QList<int> values;
 
         // 构造器
-        ParamFree() : ParamFree(0){};
-        explicit ParamFree(int start) : ParamCurve(Free), start(start), step(5){};
+        inline ParamFree() : ParamFree(0){};
+        inline explicit ParamFree(int start) : ParamCurve(Free), start(start), step(5){};
     };
 
     using ParamFreeRef = QSharedPointer<ParamFree>;
@@ -43,7 +43,7 @@ namespace QDspx {
         QList<AnchorPoint> nodes;
 
         // 构造器
-        ParamAnchor() : ParamCurve(Anchor){};
+        inline ParamAnchor() : ParamCurve(Anchor){};
     };
 
     using ParamAnchorRef = QSharedPointer<ParamAnchor>;

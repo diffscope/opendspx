@@ -1,8 +1,8 @@
 #ifndef QDSPXTRACK_H
 #define QDSPXTRACK_H
 
-#include "QDspxNote.h"
-#include "QDspxParam.h"
+#include <opendspx/qdspxparam.h>
+#include <opendspx/qdspxnote.h>
 
 namespace QDspx {
 
@@ -14,11 +14,9 @@ namespace QDspx {
         int clipLen;
 
         // 构造器
-        ClipTime() : ClipTime(0, 4800){};
-
-        ClipTime(int start, int length) : ClipTime(start, length, 0, length){};
-
-        ClipTime(int start, int length, int clipStart, int clipLen)
+        inline ClipTime() : ClipTime(0, 4800){};
+        inline ClipTime(int start, int length) : ClipTime(start, length, 0, length){};
+        inline ClipTime(int start, int length, int clipStart, int clipLen)
             : start(start), length(length), clipStart(clipStart), clipLen(clipLen){};
     };
 
@@ -44,8 +42,8 @@ namespace QDspx {
         Workspace workspace;
 
         // 构造器
-        Clip() : type(Singing){};
-        explicit Clip(Type type) : type(type){};
+        inline Clip() : type(Singing){};
+        inline explicit Clip(Type type) : type(type){};
         virtual ~Clip() = default;
     };
 

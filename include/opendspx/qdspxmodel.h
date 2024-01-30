@@ -1,10 +1,23 @@
 #ifndef QDSPXMODEL_H
 #define QDSPXMODEL_H
 
-#include "QDspxTimeline.h"
-#include "QDspxTrack.h"
+#include <opendspx/qdspxtimeline.h>
+#include <opendspx/qdspxtrack.h>
 
 namespace QDspx {
+
+    struct ReturnCode {
+        enum Type {
+            Success,
+            File,
+            InvalidFormat,
+        };
+
+        int type;
+        int code;
+
+        inline ReturnCode(int type = Success, int code = 0) : type(type), code(code){};
+    };
 
     // 文件的元信息，包括版本号、工程名、作者等
     struct OPENDSPX_EXPORT Metadata {
@@ -37,8 +50,8 @@ namespace QDspx {
         // 不定长信息
         Workspace workspace;
 
-        bool load(const QString &filename);
-        bool save(const QString &filename) const;
+        ReturnCode load(const QString &filename);
+        ReturnCode save(const QString &filename) const;
     };
 
     QAS_JSON_NS(Metadata)

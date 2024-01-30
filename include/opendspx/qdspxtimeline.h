@@ -1,7 +1,7 @@
 #ifndef QDSPXTIMELINE_H
 #define QDSPXTIMELINE_H
 
-#include "QDspxBase.h"
+#include <opendspx/qdspxbase.h>
 
 namespace QDspx {
 
@@ -16,8 +16,8 @@ namespace QDspx {
         int den;
 
         // 构造器
-        TimeSignature() : TimeSignature(0, 4, 4){};
-        TimeSignature(int pos, int num, int den) : pos(pos), num(num), den(den){};
+        inline TimeSignature() : TimeSignature(0, 4, 4){};
+        inline TimeSignature(int pos, int num, int den) : pos(pos), num(num), den(den){};
     };
 
     // 曲速
@@ -26,8 +26,8 @@ namespace QDspx {
         double value;
 
         // 构造器
-        Tempo() : Tempo(0, 120){};
-        Tempo(int pos, double value) : pos(pos), value(value){};
+        inline Tempo() : Tempo(0, 120){};
+        inline Tempo(int pos, double value) : pos(pos), value(value){};
     };
 
     // 曲速
@@ -36,8 +36,8 @@ namespace QDspx {
         QString text;
 
         // 构造器
-        Label() : Label(0){};
-        Label(int pos, const QString &text = QString()) : pos(pos), text(text){};
+        inline Label() : Label(0){};
+        inline Label(int pos, const QString &text = QString()) : pos(pos), text(text){};
     };
 
     // 时间线
