@@ -54,6 +54,8 @@ set(OPENDSPX_INSTALL_NAME ${PROJECT_NAME})
 # Main Project
 # ----------------------------------
 if(TRUE)
+    add_subdirectory(3rdparty)
+
     # Add library
     if(OPENDSPX_BUILD_STATIC)
         add_library(${PROJECT_NAME} STATIC)
@@ -81,9 +83,17 @@ if(TRUE)
     target_include_directories(${PROJECT_NAME} PRIVATE include/opendspx)
 
     # Link libraries
+    target_link_libraries(${PROJECT_NAME} PRIVATE QMidi)
+
     find_package(QT NAMES Qt6 Qt5 COMPONENTS Core REQUIRED)
     find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
     target_link_libraries(${PROJECT_NAME} PUBLIC Qt${QT_VERSION_MAJOR}::Core)
+
+    find_package(QNrbf REQUIRED)
+    target_link_libraries(${PROJECT_NAME} PRIVATE QNrbfFormat)
+
+    find_package(stdutau REQUIRED)
+    target_link_libraries(${PROJECT_NAME} PRIVATE stdutau::stdutau)
 
     # Add pre-build actions
     find_package(QasTool REQUIRED)

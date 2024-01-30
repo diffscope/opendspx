@@ -9,8 +9,8 @@ namespace QDspx {
     public:
         virtual ~Converter() = default;
 
-        virtual ReturnCode load(const QString &path, const QVariantMap &args, QDspxModel *out) = 0;
-        virtual ReturnCode save(const QString &path, const QVariantMap &args) = 0;
+        virtual ReturnCode load(const QString &path, Model *out, const QVariantMap &args) = 0;
+        virtual ReturnCode save(const QString &path, const Model &in, const QVariantMap &args) = 0;
     };
 
 }
