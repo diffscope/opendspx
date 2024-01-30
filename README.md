@@ -8,6 +8,7 @@ DiffScope data exchange format.
 
 ## Dependencies
 + [qastool](https://github.com/SineStriker/qt-json-autogen)
-+ [stdutau](https://github.com/VocaValley/stdutau)
++ [stdutau](https://github.com/diffscope/stdutau)
 + [qnrbf](https://github.com/SineStriker/QNrbf)
     + `QtCore` is required
++ [QMidi](https://github.com/waddlesplash/QMidi)
