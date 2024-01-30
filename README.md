@@ -12,3 +12,9 @@ DiffScope data exchange format.
 + [qnrbf](https://github.com/SineStriker/QNrbf)
     + `QtCore` is required
 + [QMidi](https://github.com/waddlesplash/QMidi)
+
+## Supported Formats
+
++ UTAU UST
++ OpenSVIP
++ Xiaobin XStudio SVIP (<=2.0)
