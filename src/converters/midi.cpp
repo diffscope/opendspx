@@ -3,6 +3,7 @@
 #include <functional>
 
 #include <QFile>
+#include <QTextCodec>
 
 #include <QMidiFile.h>
 

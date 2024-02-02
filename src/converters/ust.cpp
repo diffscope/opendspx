@@ -4,6 +4,7 @@
 #include <filesystem>
 
 #include <QFile>
+#include <QTextCodec>
 
 #include <stdutau/ustfile.h>
 

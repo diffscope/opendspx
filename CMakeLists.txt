@@ -95,6 +95,11 @@ if(TRUE)
     find_package(stdutau REQUIRED)
     target_link_libraries(${PROJECT_NAME} PRIVATE stdutau::stdutau)
 
+    if (QT_VERSION_MAJOR GREATER_EQUAL 6)
+        find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core5Compat REQUIRED)
+        target_link_libraries(${PROJECT_NAME} PUBLIC Qt${QT_VERSION_MAJOR}::Core5Compat)
+    endif()
+
     # Add pre-build actions
     find_package(QasTool REQUIRED)
     file(GLOB_RECURSE _json_headers include/opendspx/qdspx*.h)
