@@ -19,7 +19,7 @@ namespace QDspx {
             bool selectable;
             int channelIndex;
             int noteCount;
-            QPair<int, int> keyRange;
+            QString keyRange;
             TrackInfo() : TrackInfo({}, {}){};
             TrackInfo(const QByteArray &title, const QList<QByteArray> &lyrics)
                 : title(title), lyrics(lyrics), selectable(true), channelIndex(0), noteCount(0){};
