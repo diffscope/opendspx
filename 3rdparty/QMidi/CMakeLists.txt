@@ -30,9 +30,9 @@ elseif(HAIKU)
 endif()
 
 # Add library
-set(BUILD_STATIC ON)
+set(QMIDI_BUILD_STATIC ON)
 
-if(BUILD_STATIC)
+if(QMIDI_BUILD_STATIC)
     add_library(${PROJECT_NAME} STATIC ${SOURCES})
     target_compile_definitions(${PROJECT_NAME} PUBLIC QMIDI_STATIC)
 else()
