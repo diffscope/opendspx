@@ -272,7 +272,7 @@ namespace QDspx {
 
         // Select
         QList<qint32> selectLogicIndexs;
-        QTextCodec *codec;
+        QTextCodec *codec = QTextCodec::codecForName("UTF-8");
         {
             using Selector = std::function<bool(const QList<TrackInfo> &, const QList<QByteArray> &,
                                                 QList<int> *, QTextCodec **)>;
