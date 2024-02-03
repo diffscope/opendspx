@@ -41,11 +41,11 @@ namespace QDspx {
 
         // Verify the number of tracks and the type of midi
         if (tracksCount == 0) {
-            qDebug() << "No track found!";
+            return {ReturnCode::Empty};
         } else if (midiFormat == 0 && tracksCount > 1) {
-            qDebug() << "The number of MIDI tracks is illegal!";
+            return {ReturnCode::InvalidFormat};
         } else if (midiFormat == 2 || divType != QMidiFile::PPQ) {
-            qDebug() << "Unsupported MIDI file type!";
+            return {UnsupportedType};
         }
 
         // Parsing Tempo Map
@@ -59,7 +59,7 @@ namespace QDspx {
 
         QList<QMidiEvent *> tempMap = midi.eventsForTrack(0);
 
-        for (auto e: tempMap) {
+        for (auto e : std::as_const(tempMap)) {
             const auto &data = e->data();
             if (e->type() == QMidiEvent::Meta) {
                 switch (e->number()) {
@@ -88,7 +88,7 @@ namespace QDspx {
             quint8 channel; // 16~24
             quint16 track;  // 24~32
 
-            LogicTrack() : LogicTrack(0, 0, 0) {};
+            LogicTrack() : LogicTrack(0, 0, 0){};
 
             LogicTrack(quint16 track, quint8 channel, quint8 key) {
                 this->track = track;
@@ -112,7 +112,7 @@ namespace QDspx {
             QByteArray name;
             qint32 trackEnd;
             QMap<qint32, QByteArray> lyrics; // key: pos; value: lyric;
-            TrackNameAndLyrics() : trackEnd(0) {};
+            TrackNameAndLyrics() : trackEnd(0){};
         };
 
         // key: pack(track, channel, 0); ordered
@@ -133,7 +133,7 @@ namespace QDspx {
             cur.trackEnd = midi.trackEndTick(i);
 
             // Package data using track, channel, and note as indexes
-            for (auto e: list) {
+            for (auto e : list) {
                 // midi元事件
                 switch (e->type()) {
                     case QMidiEvent::Meta: {
@@ -151,14 +151,17 @@ namespace QDspx {
                     }
                     case QMidiEvent::NoteOn: {
                         // Add packed(track, channel, 0)
-                        trackAndChannelIndexSet.insert(LogicTrack(trackIndex, e->voice(), 0).toInt());
+                        trackAndChannelIndexSet.insert(
+                            LogicTrack(trackIndex, e->voice(), 0).toInt());
                         // Add packed(track, channel, key)
-                        noteMap[LogicTrack(trackIndex, e->voice(), e->note()).toInt()].first.append(e->tick());
+                        noteMap[LogicTrack(trackIndex, e->voice(), e->note()).toInt()].first.append(
+                            e->tick());
                         break;
                     }
                     case QMidiEvent::NoteOff: {
                         // Add packed(track, channel, key)
-                        noteMap[LogicTrack(trackIndex, e->voice(), e->note()).toInt()].second.append(e->tick());
+                        noteMap[LogicTrack(trackIndex, e->voice(), e->note()).toInt()]
+                            .second.append(e->tick());
                         break;
                     }
                     default:
@@ -175,7 +178,7 @@ namespace QDspx {
 
         // Analytical Track
         // key: pack(track, channel, 0); value: ...;
-        QMap<qint32, LogicTrackInfo> logicTrackInfos;
+        QMap<qint32, LogicTrackInfo> logicTrackInfoList;
 
         struct LogicNote {
             int pos;
@@ -183,10 +186,8 @@ namespace QDspx {
             int key;
             QByteArray lyric;
 
-            LogicNote() : LogicNote(0, 0, 0) {};
-
-            LogicNote(int pos, int len, int key) : pos(pos), len(len), key(key) {
-            }
+            LogicNote() : LogicNote(0, 0, 0){};
+            LogicNote(int pos, int len, int key) : pos(pos), len(len), key(key){};
 
             bool operator<(const LogicNote &other) const {
                 if (pos == other.pos) {
@@ -200,7 +201,7 @@ namespace QDspx {
         QMap<qint32, std::set<LogicNote>> logicTrackNotes;
 
         // Existing logical trajectory
-        for (const auto &packData: trackAndChannelIndexSet) {
+        for (const auto &packData : trackAndChannelIndexSet) {
             LogicTrack trackAndChannelIndex = LogicTrack::fromInt(packData);
 
             qint32 noteCount = 0;
@@ -223,7 +224,7 @@ namespace QDspx {
 
                 // Verify the pairing of NoteOn/Off events for each keyNum
                 if (noteListPair.first.size() != noteListPair.second.size()) {
-                    qDebug() << "The number of note-on and note-off are not match!";
+                    return {NoteEventInconsistent};
                 }
 
                 // Store the key that appears
@@ -239,7 +240,8 @@ namespace QDspx {
                     note.key = key;
 
                     {
-                        const auto &lyricsMap = trackNameAndLyrics[trackAndChannelIndex.track].lyrics;
+                        const auto &lyricsMap =
+                            trackNameAndLyrics[trackAndChannelIndex.track].lyrics;
                         auto it2 = lyricsMap.find(note.pos);
                         if (it2 != lyricsMap.end()) {
                             note.lyric = it2.value();
@@ -253,21 +255,20 @@ namespace QDspx {
             // Obtain Logical Track Range
             QString logicTrackPitchRange;
             if (!staticKeyNum.empty()) {
-                logicTrackPitchRange =
-                        ToneNumToToneName(*staticKeyNum.begin()) + "-" + ToneNumToToneName(*staticKeyNum.rbegin());
+                logicTrackPitchRange = ToneNumToToneName(*staticKeyNum.begin()) + "-" +
+                                       ToneNumToToneName(*staticKeyNum.rbegin());
             }
 
 
             // Logic Track Name
-            auto nameBytes = trackNameAndLyrics[trackAndChannelIndex.track].name;
-            TrackInfo info(nameBytes, trackNameAndLyrics[trackAndChannelIndex.track].lyrics.values());
-
-            info.format = QString("%1(%2): (%3 notes, %4)").arg("%1", QString::number(trackAndChannelIndex.channel),
-                                                                QString::number(noteCount),
-                                                                logicTrackPitchRange.isEmpty() ? "None"
-                                                                                               : logicTrackPitchRange);
-
-            logicTrackInfos.insert(packData, LogicTrackInfo{info});
+            TrackInfo info(trackNameAndLyrics[trackAndChannelIndex.track].name,
+                           trackNameAndLyrics[trackAndChannelIndex.track].lyrics.values());
+            info.channelIndex = trackAndChannelIndex.channel;
+            info.noteCount = noteCount;
+            info.keyRange = staticKeyNum.empty()
+                                ? qMakePair(-1, -1)
+                                : qMakePair(*staticKeyNum.begin(), *staticKeyNum.rbegin());
+            logicTrackInfoList.insert(packData, LogicTrackInfo{info});
         }
 
         // Select
@@ -277,29 +278,27 @@ namespace QDspx {
             using Selector = std::function<bool(const QList<TrackInfo> &, const QList<QByteArray> &,
                                                 QList<int> *, QTextCodec **)>;
             auto &selector = *reinterpret_cast<Selector *>(
-                    args.value(QStringLiteral("selector")).value<quintptr>());
+                args.value(QStringLiteral("selector")).value<quintptr>());
 
             // Info
             QList<TrackInfo> trackInfoList;
             QList<QByteArray> labelList;
 
             QList<qint32> logicIndexList;
-            for (auto it = logicTrackInfos.begin(); it != logicTrackInfos.end(); ++it) {
+            for (auto it = logicTrackInfoList.begin(); it != logicTrackInfoList.end(); ++it) {
                 logicIndexList.append(it.key());
                 trackInfoList.append(it.value().option);
             }
             if (logicIndexList.empty()) {
-                qDebug() << "This file doesn't contain any notes.";
+                return {ReturnCode::Empty};
             }
 
             // Result
             QList<int> selectIDs;
-
             if (!selector(trackInfoList, labelList, &selectIDs, &codec)) {
                 return ReturnCode::Aborted;
             }
-
-            for (auto id: selectIDs) {
+            for (auto id : selectIDs) {
                 selectLogicIndexs.append(logicIndexList[id]);
             }
         }
@@ -326,7 +325,7 @@ namespace QDspx {
         }
 
         QDspx::Label label;
-        for (auto &it: markers) {
+        for (auto &it : markers) {
             label.pos = int(it.first * scaleFactor);
             label.text = codec->toUnicode(it.second);
             timeLine.labels.append(label);
@@ -336,7 +335,7 @@ namespace QDspx {
         model.content.timeline = timeLine;
 
         // Track Data
-        for (auto &logicID: selectLogicIndexs) {
+        for (auto &logicID : selectLogicIndexs) {
             LogicTrack tempIndex = LogicTrack::fromInt(logicID);
             QDspx::Track track;
             auto clip = QDspx::SingingClipRef::create();
@@ -345,10 +344,10 @@ namespace QDspx {
             int clipEnd = int(trackNameAndLyrics[tempIndex.track].trackEnd * scaleFactor);
             QDspx::ClipTime clipTime(0, clipEnd, 0, clipEnd);
             clip->time = clipTime;
-            clip->name = codec->toUnicode(logicTrackInfos[logicID].option.title);
+            clip->name = codec->toUnicode(logicTrackInfoList[logicID].option.title);
 
             // Fill note
-            for (const auto &logicNote: logicNotes) {
+            for (const auto &logicNote : logicNotes) {
                 QDspx::Note note;
 
                 note.pos = int(logicNote.pos * scaleFactor);
@@ -385,7 +384,7 @@ namespace QDspx {
         QTextCodec *codec = QTextCodec::codecForName("UTF-8");
 
         // timeSignature
-        for (const auto &timeSignature: timeLine.timeSignatures) {
+        for (const auto &timeSignature : timeLine.timeSignatures) {
             QByteArray buf;
             buf.resize(4);
             buf[0] = int(timeSignature.num);
@@ -396,13 +395,13 @@ namespace QDspx {
         }
 
         // tempos
-        for (const auto &tempo: timeLine.tempos) {
+        for (const auto &tempo : timeLine.tempos) {
             midi.createTempoEvent(0, tempo.pos, float(tempo.value));
         }
 
 
         // label
-        for (const auto &label: timeLine.labels) {
+        for (const auto &label : timeLine.labels) {
             midi.createMarkerEvent(0, label.pos, codec->fromUnicode(label.text));
         }
 
@@ -411,26 +410,29 @@ namespace QDspx {
         for (int trackId = 0; trackId < trackNum; trackId++) {
             QDspx::Track track = in.content.tracks[trackId];
             midi.createTrack();
-            midi.createMetaEvent(trackId + 1, 0, QMidiEvent::MetaNumbers::TrackName, codec->fromUnicode(track.name));
+            midi.createMetaEvent(trackId + 1, 0, QMidiEvent::MetaNumbers::TrackName,
+                                 codec->fromUnicode(track.name));
 
 
             // clip
-            for (const auto &clip: track.clips) {
+            for (const auto &clip : track.clips) {
                 if (clip->type == QDspx::Clip::Singing) {
                     auto singingClip = clip.dynamicCast<QDspx::SingingClip>();
 
                     int clipStart = singingClip->time.clipStart;
                     int clipEnd = clipStart + singingClip->time.clipLen;
                     int posCursor = clipStart;
-                    for (const auto &note: singingClip->notes) {
+                    for (const auto &note : singingClip->notes) {
                         if (clipStart <= note.pos && note.pos < clipEnd) {
                             if (posCursor > note.pos) {
                                 overlapNotes.append(qMakePair(trackId, note));
                             }
                             int noteEnd = note.pos + note.length;
-                            midi.createLyricEvent(trackId + 1, note.pos, codec->fromUnicode(note.lyric));
+                            midi.createLyricEvent(trackId + 1, note.pos,
+                                                  codec->fromUnicode(note.lyric));
                             midi.createNoteOnEvent(trackId + 1, note.pos, 0, note.keyNum, 64);
-                            midi.createNoteOffEvent(trackId + 1, std::min(noteEnd, clipEnd), 0, note.keyNum, 64);
+                            midi.createNoteOffEvent(trackId + 1, std::min(noteEnd, clipEnd), 0,
+                                                    note.keyNum, 64);
                             posCursor = std::max(posCursor, note.pos + note.length);
                         }
                     }
@@ -443,7 +445,7 @@ namespace QDspx {
             using OverlapHandler = std::function<bool()>;
 
             auto &overlapHandler = *reinterpret_cast<OverlapHandler *>(
-                    args.value(QStringLiteral("overlapHandler")).value<quintptr>());
+                args.value(QStringLiteral("overlapHandler")).value<quintptr>());
             if (!overlapHandler()) {
                 return ReturnCode::Aborted;
             }

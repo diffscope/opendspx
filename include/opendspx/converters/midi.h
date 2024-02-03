@@ -10,19 +10,23 @@ namespace QDspx {
         enum Result {
             NoTrack = ReturnCode::User + 1,
             UnsupportedType,
+            NoteEventInconsistent,
         };
 
         struct TrackInfo {
             QByteArray title;
             QList<QByteArray> lyrics;
-            QString format; // Display as format.arg(title)
             bool selectable;
+            int channelIndex;
+            int noteCount;
+            QPair<int, int> keyRange;
             TrackInfo() : TrackInfo({}, {}){};
             TrackInfo(const QByteArray &title, const QList<QByteArray> &lyrics)
-                : title(title), lyrics(lyrics), format(QStringLiteral("%1")), selectable(true){};
+                : title(title), lyrics(lyrics), selectable(true), channelIndex(0), noteCount(0){};
         };
 
-        // selector: bool (const QList<TrackInfo> &, const QList<QByteArray> &, QList<int> *, QTextCodec **);
+        // selector: bool (const QList<TrackInfo> &, const QList<QByteArray> &, QList<int> *,
+        // QTextCodec **);
         ReturnCode load(const QString &path, Model *out, const QVariantMap &args) override;
 
         // overlapHandler: bool ();

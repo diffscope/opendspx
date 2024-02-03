@@ -11,6 +11,7 @@ namespace QDspx {
             Success,
             File,
             InvalidFormat,
+            Empty,
             Aborted,
             User = 1024,
         };
