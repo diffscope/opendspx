@@ -53,6 +53,8 @@ set(OPENDSPX_INSTALL_NAME ${PROJECT_NAME})
 # ----------------------------------
 # Main Project
 # ----------------------------------
+set(CMAKE_POSITION_INDEPENDENT_CODE on)
+
 if(TRUE)
     add_subdirectory(3rdparty)
 
