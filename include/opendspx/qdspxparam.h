@@ -62,6 +62,8 @@ namespace QDspx {
     struct OPENDSPX_EXPORT SingleParam {
         ParamInfo pitch;
         ParamInfo energy;
+        ParamInfo tension;
+        ParamInfo breathiness;
     };
 
     QAS_JSON_NS(ParamCurve)

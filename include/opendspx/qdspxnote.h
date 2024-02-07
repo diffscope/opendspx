@@ -19,14 +19,14 @@ namespace QDspx {
 
         Type type;
         QString token;
-        int duration;
+        int start;
 
         // 不定长信息
         Extra extra;
         Workspace workspace;
 
         // 构造器
-        inline Phoneme() : type(Normal), duration(0){};
+        inline Phoneme() : type(Normal), start(0){};
     };
 
     // 音素信息
@@ -57,6 +57,7 @@ namespace QDspx {
         int length;
         int keyNum;
         QString lyric;
+        QString pronunciation;
         PhonemeInfo phonemes;
         VibratoInfo vibrato;
 
