@@ -40,6 +40,7 @@ namespace QDspx {
 
     // 锚点参数
     struct OPENDSPX_EXPORT ParamAnchor : public ParamCurve {
+        int start;
         QList<AnchorPoint> nodes;
 
         // 构造器
