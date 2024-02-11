@@ -112,7 +112,7 @@ if(TRUE)
     # Add platform specific
     if(WIN32)
         set(RC_DESCRIPTION "DiffScope Data Exchange Format")
-        set(RC_COPYRIGHT "Copyright 2023-2024 OpenVPI")
+        set(RC_COPYRIGHT "Copyright 2023-2024 Team OpenVPI")
         include("cmake/winrc.cmake")
     endif()
 
