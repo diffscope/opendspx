@@ -70,7 +70,12 @@
                                 "pos": 480,
                                 "length": 480,
                                 "keyNum": 60,
+                                "language": "zh_CN",
                                 "lyric": "拉",
+                                "pronunciation": {
+                                    "original": "la",
+                                    "edited": null
+                                },
                                 "phonemes": {
                                     "original": [
                                         {

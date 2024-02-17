@@ -7,7 +7,7 @@
 namespace QDspx {
 
     // 音轨区间时间信息
-    struct OPENDSPX_EXPORT ClipTime {
+    struct ClipTime {
         int start;
         int length;
         int clipStart;
@@ -21,7 +21,7 @@ namespace QDspx {
     };
 
     // 音轨区间
-    struct OPENDSPX_EXPORT Clip {
+    struct Clip {
         enum Type {
             __qas_attr__("singing") //
             Singing,
@@ -50,7 +50,7 @@ namespace QDspx {
     using ClipRef = QSharedPointer<Clip>;
 
     // 波形区间
-    struct OPENDSPX_EXPORT AudioClip : public Clip {
+    struct AudioClip : public Clip {
         QString path;
 
         // 构造器
@@ -60,7 +60,7 @@ namespace QDspx {
     using AudioClipRef = QSharedPointer<AudioClip>;
 
     // 人声区间
-    struct OPENDSPX_EXPORT SingingClip : public Clip {
+    struct SingingClip : public Clip {
         QList<Note> notes;
         SingleParam params;
 
@@ -74,7 +74,7 @@ namespace QDspx {
     using SingingClipRef = QSharedPointer<SingingClip>;
 
     // 音轨
-    struct OPENDSPX_EXPORT Track {
+    struct Track {
         QString name;
         TrackControl control;
         QList<ClipRef> clips;

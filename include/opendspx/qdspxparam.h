@@ -6,7 +6,7 @@
 namespace QDspx {
 
     // 参数曲线基类
-    struct OPENDSPX_EXPORT ParamCurve {
+    struct ParamCurve {
         enum Type {
             __qas_attr__("anchor") //
             Anchor,
@@ -26,7 +26,7 @@ namespace QDspx {
     using ParamCurveRef = QSharedPointer<ParamCurve>;
 
     // 手绘参数
-    struct OPENDSPX_EXPORT ParamFree : public ParamCurve {
+    struct ParamFree : public ParamCurve {
         int start;
         int step;
         QList<int> values;
@@ -39,7 +39,7 @@ namespace QDspx {
     using ParamFreeRef = QSharedPointer<ParamFree>;
 
     // 锚点参数
-    struct OPENDSPX_EXPORT ParamAnchor : public ParamCurve {
+    struct ParamAnchor : public ParamCurve {
         int start;
         QList<AnchorPoint> nodes;
 
@@ -50,7 +50,7 @@ namespace QDspx {
     using ParamAnchorRef = QSharedPointer<ParamAnchor>;
 
     // 参数结构
-    struct OPENDSPX_EXPORT ParamInfo {
+    struct ParamInfo {
         __qas_attr__("original")
         QList<ParamCurveRef> org;
 
@@ -60,7 +60,7 @@ namespace QDspx {
     };
 
     // 单线条参数
-    struct OPENDSPX_EXPORT SingleParam {
+    struct SingleParam {
         ParamInfo pitch;
         ParamInfo energy;
         ParamInfo tension;

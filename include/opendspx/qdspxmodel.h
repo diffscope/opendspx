@@ -23,19 +23,19 @@ namespace QDspx {
     };
 
     // 文件的元信息，包括版本号、工程名、作者等
-    struct OPENDSPX_EXPORT Metadata {
+    struct Metadata {
         QString version;
         QString name;
         QString author;
     };
 
     // 总线控制
-    struct OPENDSPX_EXPORT Master {
+    struct Master {
         Control control;
     };
 
     // 工程可编辑区域
-    struct OPENDSPX_EXPORT Content {
+    struct Content {
         Master master;
         Timeline timeline;
         QList<Track> tracks;
@@ -46,7 +46,7 @@ namespace QDspx {
     };
 
     // 工程
-    struct OPENDSPX_EXPORT Model {
+    struct Model {
         Metadata metadata;
         Content content;
 

@@ -6,7 +6,7 @@
 namespace QDspx {
 
     // 拍号
-    struct OPENDSPX_EXPORT TimeSignature {
+    struct TimeSignature {
         int pos;
 
         __qas_attr__("numerator")
@@ -21,7 +21,7 @@ namespace QDspx {
     };
 
     // 曲速
-    struct OPENDSPX_EXPORT Tempo {
+    struct Tempo {
         int pos;
         double value;
 
@@ -31,7 +31,7 @@ namespace QDspx {
     };
 
     // 曲速
-    struct OPENDSPX_EXPORT Label {
+    struct Label {
         int pos;
         QString text;
 
@@ -41,7 +41,7 @@ namespace QDspx {
     };
 
     // 时间线
-    struct OPENDSPX_EXPORT Timeline {
+    struct Timeline {
         QList<TimeSignature> timeSignatures;
         QList<Tempo> tempos;
         QList<Label> labels;

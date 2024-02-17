@@ -6,7 +6,7 @@
 namespace QDspx {
 
     // 音素
-    struct OPENDSPX_EXPORT Phoneme {
+    struct Phoneme {
         enum Type {
             __qas_attr__("ahead")  //
             Ahead,
@@ -30,7 +30,7 @@ namespace QDspx {
     };
 
     // 音素信息
-    struct OPENDSPX_EXPORT PhonemeInfo {
+    struct PhonemeInfo {
         __qas_attr__("original")
         QList<Phoneme> org;
 
@@ -38,7 +38,7 @@ namespace QDspx {
     };
 
     // 颤音信息
-    struct OPENDSPX_EXPORT VibratoInfo {
+    struct VibratoInfo {
         double start;
         double end;
         double freq;
@@ -51,13 +51,21 @@ namespace QDspx {
         inline VibratoInfo() : start(0), end(1), freq(2), phase(0), amp(1), offset(0){};
     };
 
+    // 发音
+    struct Pronunciation {
+        __qas_attr__("original")
+        QString org;
+        QString edited;
+    };
+
     // 音符
-    struct OPENDSPX_EXPORT Note {
+    struct Note {
         int pos;
         int length;
         int keyNum;
+        QString language;
         QString lyric;
-        QString pronunciation;
+        Pronunciation pronunciation;
         PhonemeInfo phonemes;
         VibratoInfo vibrato;
 
@@ -73,6 +81,7 @@ namespace QDspx {
     QAS_JSON_NS(Phoneme)
     QAS_JSON_NS(PhonemeInfo)
     QAS_JSON_NS(VibratoInfo)
+    QAS_JSON_NS(Pronunciation)
     QAS_JSON_NS(Note)
 
 }

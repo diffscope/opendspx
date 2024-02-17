@@ -12,7 +12,7 @@ namespace QDspx {
     using SourceInfo = QMap<QString, QJsonObject>; // 外部资源信息，不定长
 
     // 主控
-    struct OPENDSPX_EXPORT Control {
+    struct Control {
         double gain;
         bool mute;
 
@@ -22,7 +22,7 @@ namespace QDspx {
     };
 
     // 音轨主控
-    struct OPENDSPX_EXPORT TrackControl : public Control {
+    struct TrackControl : public Control {
         double pan;
         bool solo;
 
@@ -35,7 +35,7 @@ namespace QDspx {
 
     // 泛型点
     template <class T>
-    struct OPENDSPX_EXPORT Point {
+    struct Point {
         T x;
         T y;
 
@@ -47,7 +47,7 @@ namespace QDspx {
     using DoublePoint = Point<double>;
 
     // 控制点
-    struct OPENDSPX_EXPORT AnchorPoint : public IntPoint {
+    struct AnchorPoint : public IntPoint {
         enum Interpolation {
             __qas_attr__("none")    //
             None,

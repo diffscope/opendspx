@@ -117,6 +117,9 @@
     ],
     "color": {
         ...
+    },
+    "workspace": {
+        ...
     }
 }
 ```
@@ -137,6 +140,7 @@
         ```json
         "id": "1"
         ```
++ `workspace`: 应用程序状态信息
 
 ## 音频区间
 
@@ -155,6 +159,9 @@
         "mute": false
     },
     "path": "/path/to/bgm.wav",
+    "workspace": {
+        ...
+    }
 }
 ```
 
@@ -167,6 +174,7 @@
 + `name`：音轨名
 + `control`：与主控一致
 + `path`：音频文件所在路径
++ `workspace`: 应用程序状态信息
 
 ## 人声区间
 
@@ -222,6 +230,9 @@
             ...
         },
         ...
+    },
+    "workspace": {
+        ...
     }
 }
 ```
@@ -236,6 +247,7 @@
         + `edited`：已修改的参数列表
         + `envelope`: 在实参上的包络（音高参数没有这个属性）
 + `sources`：使用到的模型
++ `workspace`: 应用程序状态信息
 
 ## 音符
 
@@ -244,7 +256,12 @@
     "pos": 480,
     "length": 480,
     "keyNum": 60,
+    "language": "zh_CN",
     "lyric": "拉",
+    "pronunciation": {
+        "original": "la",
+        "edited": null
+    },
     "phonemes": {
         "original": [
             ...
@@ -270,6 +287,9 @@
                 "y": 1
             }
         ]
+    },
+    "workspace": {
+        ...
     }
 }
 ```
@@ -277,7 +297,11 @@
 + `pos`：位置（tick），`int`
 + `length`：长度（tick），`int`
 + `keyNum`：音阶
++ `language`: 语言（待定）
 + `lyric`：歌词
++ `pronunciation`: 发音
+    `original`：G2P 自动生成的发音
+    `edited`：用户修改后的发音
 + `phonemes`：音素
     `original`：自动参数列表
     `edited`：已修改的参数列表
@@ -291,6 +315,7 @@
     + `points`：控制点列表，一般只有两个点
         + `x`：颤音长度比例（0~1），`double`
         + `y`：颤音振幅比例（0~1），`double`
++ `workspace`: 应用程序状态信息
 
 ## 音素
 
