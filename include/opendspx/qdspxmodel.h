@@ -19,7 +19,7 @@ namespace QDspx {
         int type;
         int code;
 
-        inline ReturnCode(int type = Success, int code = 0) : type(type), code(code){};
+        inline ReturnCode(int type = Success, int code = 0) : type(type), code(code) {};
     };
 
     // 文件的元信息，包括版本号、工程名、作者等
@@ -46,7 +46,7 @@ namespace QDspx {
     };
 
     // 工程
-    struct Model {
+    struct OPENDSPX_EXPORT Model {
         Metadata metadata;
         Content content;
 
@@ -54,12 +54,16 @@ namespace QDspx {
         Workspace workspace;
 
         ReturnCode load(const QString &filename);
+
         ReturnCode save(const QString &filename) const;
     };
 
     QAS_JSON_NS(Metadata)
+
     QAS_JSON_NS(Master)
+
     QAS_JSON_NS(Content)
+
     QAS_JSON_NS(Model)
 
 }
