@@ -17,7 +17,9 @@ namespace QDspx {
 
     // Convert note number to note name.
     QString ToneNumToToneName(int num) {
-        const QString tones[] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
+        static const QString tones[] = {
+            "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B",
+        };
 
         int step = num % 12;
         int octave = num / 12;
@@ -68,7 +70,7 @@ namespace QDspx {
         QList<QMidiEvent *> tempMap = midi.eventsForTrack(0);
 
         // Parsing Meta Event
-        for (auto e: std::as_const(tempMap)) {
+        for (auto e : std::as_const(tempMap)) {
             const auto &data = e->data();
             if (e->type() == QMidiEvent::Meta) {
                 switch (e->number()) {
@@ -101,7 +103,7 @@ namespace QDspx {
             quint8 channel; // 16~24, note channel
             quint16 track;  // 24~32, note track
 
-            LogicIndex() : LogicIndex(0, 0, 0) {};
+            LogicIndex() : LogicIndex(0, 0, 0){};
 
             LogicIndex(quint16 track, quint8 channel, quint8 key) {
                 this->track = track;
@@ -126,7 +128,7 @@ namespace QDspx {
             QByteArray name;
             qint32 trackEnd;
             QMap<qint32, QByteArray> lyrics; // key: pos; value: lyric;
-            TrackNameAndLyrics() : trackEnd(0) {};
+            TrackNameAndLyrics() : trackEnd(0){};
         };
 
         // Logical track index set.
@@ -148,7 +150,7 @@ namespace QDspx {
             cur.trackEnd = midi.trackEndTick(i);
 
             // Package data using track, channel, and note as indexes.
-            for (auto e: list) {
+            for (auto e : list) {
                 // Parsing Meta Event
                 switch (e->type()) {
                     case QMidiEvent::Meta: {
@@ -167,17 +169,16 @@ namespace QDspx {
                         // Parsing Note Event
                     case QMidiEvent::NoteOn: {
                         // Add packed(track, channel, 0)
-                        logicIndexSet.insert(
-                                LogicIndex(trackIndex, e->voice(), 0).toInt());
+                        logicIndexSet.insert(LogicIndex(trackIndex, e->voice(), 0).toInt());
                         // Add packed(track, channel, key), noteOn pos.
-                        pitchNoteMap[LogicIndex(trackIndex, e->voice(), e->note()).toInt()].first.append(
-                                e->tick());
+                        pitchNoteMap[LogicIndex(trackIndex, e->voice(), e->note()).toInt()]
+                            .first.append(e->tick());
                         break;
                     }
                     case QMidiEvent::NoteOff: {
                         // Add packed(track, channel, key), noteOff pos.
                         pitchNoteMap[LogicIndex(trackIndex, e->voice(), e->note()).toInt()]
-                                .second.append(e->tick());
+                            .second.append(e->tick());
                         break;
                     }
                     default:
@@ -204,9 +205,9 @@ namespace QDspx {
             int key;
             QByteArray lyric;
 
-            LogicNote() : LogicNote(0, 0, 0) {};
+            LogicNote() : LogicNote(0, 0, 0){};
 
-            LogicNote(int pos, int len, int key) : pos(pos), len(len), key(key) {};
+            LogicNote(int pos, int len, int key) : pos(pos), len(len), key(key){};
 
             bool operator<(const LogicNote &other) const {
                 if (pos == other.pos) {
@@ -220,7 +221,7 @@ namespace QDspx {
         QMap<qint32, std::set<LogicNote>> logicTrackNotes;
 
         // Traverse the logical index set to encapsulate the logical track.
-        for (const auto &packedLogicIndex: logicIndexSet) {
+        for (const auto &packedLogicIndex : logicIndexSet) {
             LogicIndex logicIndex = LogicIndex::fromInt(packedLogicIndex);
 
             qint32 noteCount = 0;
@@ -280,8 +281,9 @@ namespace QDspx {
                            physicNameAndLyrics[logicIndex.track].lyrics.values());
             info.channelIndex = logicIndex.channel;
             info.noteCount = noteCount;
-            info.keyRange = staticKeyNum.empty() ? "-" : ToneNumToToneName(*staticKeyNum.begin()) + "-" +
-                                                         ToneNumToToneName(*staticKeyNum.rbegin());
+            info.keyRange = staticKeyNum.empty() ? "-"
+                                                 : ToneNumToToneName(*staticKeyNum.begin()) + "-" +
+                                                       ToneNumToToneName(*staticKeyNum.rbegin());
             logicTrackInfoList.insert(packedLogicIndex, LogicTrackInfo{info});
         }
 
@@ -292,7 +294,7 @@ namespace QDspx {
             using Selector = std::function<bool(const QList<TrackInfo> &, const QList<QByteArray> &,
                                                 QList<int> *, QTextCodec **)>;
             auto &selector = *reinterpret_cast<Selector *>(
-                    args.value(QStringLiteral("selector")).value<quintptr>());
+                args.value(QStringLiteral("selector")).value<quintptr>());
 
             // Info
             QList<TrackInfo> trackInfoList;
@@ -313,7 +315,7 @@ namespace QDspx {
             if (!selector(trackInfoList, labelList, &selectIDs, &codec)) {
                 return ReturnCode::Aborted;
             }
-            for (auto id: selectIDs) {
+            for (auto id : selectIDs) {
                 selectLogicIndexs.append(logicIndexList[id]);
             }
         }
@@ -340,7 +342,7 @@ namespace QDspx {
         }
 
         QDspx::Label label;
-        for (auto &it: markers) {
+        for (auto &it : markers) {
             label.pos = int(it.first * scaleFactor);
             label.text = codec->toUnicode(it.second);
             timeLine.labels.append(label);
@@ -350,7 +352,7 @@ namespace QDspx {
         model.content.timeline = timeLine;
 
         // Track Data
-        for (auto &logicID: selectLogicIndexs) {
+        for (auto &logicID : selectLogicIndexs) {
             LogicIndex tempIndex = LogicIndex::fromInt(logicID);
             QDspx::Track track;
             auto clip = QDspx::SingingClipRef::create();
@@ -362,7 +364,7 @@ namespace QDspx {
             clip->name = codec->toUnicode(logicTrackInfoList[logicID].option.title);
 
             // Fill note.
-            for (const auto &logicNote: logicNotes) {
+            for (const auto &logicNote : logicNotes) {
                 QDspx::Note note;
 
                 note.pos = int(logicNote.pos * scaleFactor);
@@ -399,7 +401,7 @@ namespace QDspx {
         QTextCodec *codec = QTextCodec::codecForName("UTF-8");
 
         // timeSignature
-        for (const auto &timeSignature: timeLine.timeSignatures) {
+        for (const auto &timeSignature : timeLine.timeSignatures) {
             QByteArray buf;
             buf.resize(4);
             buf[0] = int(timeSignature.num);
@@ -410,12 +412,12 @@ namespace QDspx {
         }
 
         // tempos
-        for (const auto &tempo: timeLine.tempos) {
+        for (const auto &tempo : timeLine.tempos) {
             midi.createTempoEvent(0, tempo.pos, float(tempo.value));
         }
 
         // label
-        for (const auto &label: timeLine.labels) {
+        for (const auto &label : timeLine.labels) {
             midi.createMarkerEvent(0, label.pos, codec->fromUnicode(label.text));
         }
 
@@ -429,14 +431,14 @@ namespace QDspx {
 
 
             // clip
-            for (const auto &clip: track.clips) {
+            for (const auto &clip : track.clips) {
                 if (clip->type == QDspx::Clip::Singing) {
                     auto singingClip = clip.dynamicCast<QDspx::SingingClip>();
 
                     int clipStart = singingClip->time.clipStart;
                     int clipEnd = clipStart + singingClip->time.clipLen;
                     int posCursor = clipStart;
-                    for (const auto &note: singingClip->notes) {
+                    for (const auto &note : singingClip->notes) {
                         if (clipStart <= note.pos && note.pos < clipEnd) {
                             if (posCursor > note.pos) {
                                 overlapNotes.append(qMakePair(trackId, note));
@@ -459,7 +461,7 @@ namespace QDspx {
             using OverlapHandler = std::function<bool()>;
 
             auto &overlapHandler = *reinterpret_cast<OverlapHandler *>(
-                    args.value(QStringLiteral("overlapHandler")).value<quintptr>());
+                args.value(QStringLiteral("overlapHandler")).value<quintptr>());
             if (!overlapHandler()) {
                 return ReturnCode::Aborted;
             }
