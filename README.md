@@ -12,6 +12,7 @@ DiffScope data exchange format.
 + [qnrbf](https://github.com/SineStriker/QNrbf)
     + `QtCore` is required
 + [QMidi](https://github.com/waddlesplash/QMidi)
+    + `QtCore` is required
 
 ## Supported Formats
 
