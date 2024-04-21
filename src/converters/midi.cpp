@@ -1,5 +1,6 @@
 #include "converters/midi.h"
 
+#include <cmath>
 #include <functional>
 
 #include <QFile>
