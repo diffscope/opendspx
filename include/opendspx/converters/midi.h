@@ -3,12 +3,14 @@
 
 #include <opendspx/converter.h>
 
+#include <utility>
+
 namespace QDspx {
 
     class OPENDSPX_EXPORT MidiConverter : public Converter {
     public:
-        enum Result {
-            NoTrack = ReturnCode::User + 1,
+        enum Error {
+            NoTrack = Result::User + 1,
             UnsupportedType,
             NoteEventInconsistent,
         };
@@ -21,16 +23,18 @@ namespace QDspx {
             int noteCount;
             QString keyRange;
             TrackInfo() : TrackInfo({}, {}){};
-            TrackInfo(const QByteArray &title, const QList<QByteArray> &lyrics)
-                : title(title), lyrics(lyrics), selectable(true), channelIndex(0), noteCount(0){};
+            TrackInfo(QByteArray title, const QList<QByteArray> &lyrics)
+                : title(std::move(title)), lyrics(lyrics), selectable(true), channelIndex(0),
+                  noteCount(0) {
+            }
         };
 
         // selector: bool (const QList<TrackInfo> &, const QList<QByteArray> &, QList<int> *,
         // QTextCodec **);
-        ReturnCode load(const QString &path, Model *out, const QVariantMap &args) override;
+        Result load(const QString &path, Model *out, const QVariantMap &args) override;
 
         // overlapHandler: bool ();
-        ReturnCode save(const QString &path, const Model &in, const QVariantMap &args) override;
+        Result save(const QString &path, const Model &in, const QVariantMap &args) override;
     };
 
 }

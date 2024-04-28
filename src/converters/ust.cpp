@@ -10,34 +10,34 @@
 
 namespace QDspx {
 
-    ReturnCode UstConverter::load(const QString &path, Model *out, const QVariantMap &args) {
+    Result UstConverter::load(const QString &path, Model *out, const QVariantMap &args) {
         std::ifstream fs(std::filesystem::path(path.toStdWString()));
         if (!fs.is_open())
-            return {ReturnCode::File, QFileDevice::ReadError};
+            return {Result::File, QFileDevice::ReadError};
 
         Utau::UstFile file;
         if (!file.read(fs)) {
-            return ReturnCode::InvalidFormat;
+            return Result::InvalidFormat;
         }
 
         // Convert
 
-        return ReturnCode::Success;
+        return Result::Success;
     }
 
-    ReturnCode UstConverter::save(const QString &path, const Model &in, const QVariantMap &args) {
+    Result UstConverter::save(const QString &path, const Model &in, const QVariantMap &args) {
         std::ofstream fs(std::filesystem::path(path.toStdWString()));
         if (!fs.is_open())
-            return {ReturnCode::File, QFileDevice::WriteError};
+            return {Result::File, QFileDevice::WriteError};
 
         Utau::UstFile file;
 
         // Convert
 
         if (!file.write(fs)) {
-            return {ReturnCode::File, QFileDevice::WriteError};
+            return {Result::File, QFileDevice::WriteError};
         }
-        return ReturnCode::Success;
+        return Result::Success;
     }
 
 }

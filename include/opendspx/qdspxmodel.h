@@ -6,7 +6,7 @@
 
 namespace QDspx {
 
-    struct ReturnCode {
+    struct Result {
         enum Type {
             Success,
             File,
@@ -19,12 +19,11 @@ namespace QDspx {
         int type;
         int code;
 
-        inline ReturnCode(int type = Success, int code = 0) : type(type), code(code) {};
+        inline Result(int type = Success, int code = 0) : type(type), code(code) {};
     };
 
     // 文件的元信息，包括版本号、工程名、作者等
     struct Metadata {
-        QString version;
         QString name;
         QString author;
     };
@@ -36,26 +35,23 @@ namespace QDspx {
 
     // 工程可编辑区域
     struct Content {
+        Metadata metadata;
         Master master;
         Timeline timeline;
         QList<Track> tracks;
-
-        // 不定长信息
-        Extra extra;
         Workspace workspace;
     };
 
     // 工程
     struct OPENDSPX_EXPORT Model {
-        Metadata metadata;
+        QString version;
         Content content;
 
-        // 不定长信息
-        Workspace workspace;
+        Result load(const QString &filename);
+        Result save(const QString &filename) const;
 
-        ReturnCode load(const QString &filename);
-
-        ReturnCode save(const QString &filename) const;
+        Result loadData(const QByteArray &data);
+        QByteArray saveData() const;
     };
 
     QAS_JSON_NS(Metadata)

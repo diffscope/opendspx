@@ -9,15 +9,11 @@
     "version": "1.0.0",
     "content": {
         ...
-    },
-    "workspace": {
-        ...
     }
 }
 ```
 + `version`：文件版本号
 + `content`：工程可编辑区域，见下
-+ `workspace`：应用程序状态信息
 
 ## 可编辑区域
 
@@ -46,7 +42,10 @@
     },
     "tracks": [
         ...
-    ]
+    ],
+    "workspace": {
+      ...
+    }
 }
 ```
 + `metadata`: 元信息
@@ -65,6 +64,7 @@
     + `tempos`：曲速列表
     + `labels`：标签；列表
 + `tracks`：音轨列表
++ `workspace`：应用程序状态信息
 
 ## 拍号
 

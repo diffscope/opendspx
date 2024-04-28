@@ -6,10 +6,10 @@
 
 namespace QDspx {
 
-    ReturnCode SvipConverter::load(const QString &path, Model *out, const QVariantMap &args) {
+    Result SvipConverter::load(const QString &path, Model *out, const QVariantMap &args) {
         QFile file(path);
         if (!file.open(QIODevice::ReadOnly)) {
-            return {ReturnCode::File, file.error()};
+            return {Result::File, file.error()};
         }
 
         QByteArray bytes = file.readAll();
@@ -24,22 +24,22 @@ namespace QDspx {
         in >> svipName;
         in >> version;
         if (in.status() != QDataStream::Ok) {
-            return ReturnCode::InvalidFormat;
+            return Result::InvalidFormat;
         }
         in >> xsProject;
         if (in.status() != QDataStream::Ok) {
-            return ReturnCode::InvalidFormat;
+            return Result::InvalidFormat;
         }
 
         // Convert
 
-        return ReturnCode::Success;
+        return Result::Success;
     }
 
-    ReturnCode SvipConverter::save(const QString &path, const Model &in, const QVariantMap &args) {
+    Result SvipConverter::save(const QString &path, const Model &in, const QVariantMap &args) {
         QFile file(path);
         if (!file.open(QIODevice::WriteOnly))
-            return {ReturnCode::File, file.error()};
+            return {Result::File, file.error()};
 
         QNrbf::XSAppModel xsProject;
 
@@ -50,7 +50,7 @@ namespace QDspx {
         output << "SVIP"
                << "6.0.0" << xsProject;
         file.close();
-        return ReturnCode::Success;
+        return Result::Success;
     }
 
 }

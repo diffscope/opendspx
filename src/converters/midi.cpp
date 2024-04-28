@@ -34,10 +34,10 @@ namespace QDspx {
     }
 
     // Load MIDI file to QDspxModel.
-    ReturnCode MidiConverter::load(const QString &path, Model *out, const QVariantMap &args) {
+    Result MidiConverter::load(const QString &path, Model *out, const QVariantMap &args) {
         QMidiFile midi;
         if (!midi.load(path)) {
-            return {ReturnCode::File, QFileDevice::ReadError}; // Ignore concrete error type
+            return {Result::File, QFileDevice::ReadError}; // Ignore concrete error type
         }
 
         // Convert
@@ -49,9 +49,9 @@ namespace QDspx {
 
         // Verify the number of tracks and the type of midi
         if (tracksCount == 0) {
-            return {ReturnCode::Empty};
+            return {Result::Empty};
         } else if (midiFormat == 0 && tracksCount > 1) {
-            return {ReturnCode::InvalidFormat};
+            return {Result::InvalidFormat};
         } else if (midiFormat == 2 || divType != QMidiFile::PPQ) {
             return {UnsupportedType};
         }
@@ -289,7 +289,7 @@ namespace QDspx {
         }
 
         // Select
-        QList<qint32> selectLogicIndexs;
+        QList<qint32> selectLogicIndexes;
         QTextCodec *codec = QTextCodec::codecForName("UTF-8");
         {
             using Selector = std::function<bool(const QList<TrackInfo> &, const QList<QByteArray> &,
@@ -308,16 +308,16 @@ namespace QDspx {
                 trackInfoList.append(it.value().option);
             }
             if (logicIndexList.empty()) {
-                return {ReturnCode::Empty};
+                return {Result::Empty};
             }
 
             // Result
             QList<int> selectIDs;
             if (!selector(trackInfoList, labelList, &selectIDs, &codec)) {
-                return ReturnCode::Aborted;
+                return Result::Aborted;
             }
             for (auto id : selectIDs) {
-                selectLogicIndexs.append(logicIndexList[id]);
+                selectLogicIndexes.append(logicIndexList[id]);
             }
         }
 
@@ -353,7 +353,7 @@ namespace QDspx {
         model.content.timeline = timeLine;
 
         // Track Data
-        for (auto &logicID : selectLogicIndexs) {
+        for (auto &logicID : selectLogicIndexes) {
             LogicIndex tempIndex = LogicIndex::fromInt(logicID);
             QDspx::Track track;
             auto clip = QDspx::SingingClipRef::create();
@@ -383,10 +383,10 @@ namespace QDspx {
 
         *out = std::move(model);
 
-        return ReturnCode::Success;
+        return Result::Success;
     }
 
-    ReturnCode MidiConverter::save(const QString &path, const Model &in, const QVariantMap &args) {
+    Result MidiConverter::save(const QString &path, const Model &in, const QVariantMap &args) {
         QMidiFile midi;
         midi.setFileFormat(1);
         midi.setDivisionType(QMidiFile::DivisionType::PPQ);
@@ -405,8 +405,8 @@ namespace QDspx {
         for (const auto &timeSignature : timeLine.timeSignatures) {
             QByteArray buf;
             buf.resize(4);
-            buf[0] = int(timeSignature.num);
-            buf[1] = int(std::log2(timeSignature.den));
+            buf[0] = char(timeSignature.num);
+            buf[1] = char(std::log2(timeSignature.den));
             buf[2] = 24;
             buf[3] = 8;
             midi.createMetaEvent(0, timeSignature.pos, QMidiEvent::TimeSignature, buf);
@@ -464,15 +464,15 @@ namespace QDspx {
             auto &overlapHandler = *reinterpret_cast<OverlapHandler *>(
                 args.value(QStringLiteral("overlapHandler")).value<quintptr>());
             if (!overlapHandler()) {
-                return ReturnCode::Aborted;
+                return Result::Aborted;
             }
         }
 
         if (!midi.save(path)) {
-            return {ReturnCode::File, QFileDevice::WriteError}; // Ignore concrete error type
+            return {Result::File, QFileDevice::WriteError}; // Ignore concrete error type
         }
 
-        return ReturnCode::Success;
+        return Result::Success;
     }
 
 }
