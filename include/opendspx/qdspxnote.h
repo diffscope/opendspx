@@ -63,6 +63,7 @@ namespace QDspx {
         int pos;
         int length;
         int keyNum;
+        int centShift;
         QString language;
         QString lyric;
         Pronunciation pronunciation;

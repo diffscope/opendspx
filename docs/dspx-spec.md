@@ -19,13 +19,15 @@
 
 ```json
 {
-    "metadata": {
+    "global": {
         "name": "New Project",
-        "author": "Admin"
+        "author": "Admin",
+        "centShift": 0,
     },
     "master": {
         "control": {
             "gain": 0,
+            "pan": 0,
             "mute": false
         }
     },
@@ -48,12 +50,14 @@
     }
 }
 ```
-+ `metadata`: 元信息
++ `global`: 元信息
     + `name`: 工程名
     + `author`: 作者
+    + `centShift`：全局音分偏移
 + `master`：总线控制
     + `control`: 全局主控
         + `gain`：增益，`double`
+        + `pan`：声像（-1~1），`double`
         + `mute`：静音
     <!-- + `loop`: 循环区间
         + `enabled`: 是否启用
@@ -127,7 +131,6 @@
 + `name`：主控
 + `control`: 音轨主控
     + `gain`：增益，`double`
-    + `pan`：声像（-1~1），`double`
     + `mute`：静音
     + `solo`：独奏
 + `clips`：音轨区间列表，暂有音频区间、人声区间
@@ -156,6 +159,7 @@
     "name": "BGM_1",
     "control": {
         "gain": 1,
+        "pan": 0,
         "mute": false
     },
     "path": "/path/to/bgm.wav",
@@ -256,6 +260,7 @@
     "pos": 480,
     "length": 480,
     "keyNum": 60,
+    "centShift": 0,
     "language": "zh_CN",
     "lyric": "拉",
     "pronunciation": {
@@ -297,6 +302,7 @@
 + `pos`：位置（tick），`int`
 + `length`：长度（tick），`int`
 + `keyNum`：音阶
++ `centShift`：音分偏移
 + `language`: 语言（待定）
 + `lyric`：歌词
 + `pronunciation`: 发音

@@ -14,23 +14,23 @@ namespace QDspx {
     // 主控
     struct Control {
         double gain;
+        double pan;
         bool mute;
 
         // 构造器
-        inline Control() : Control(0, false){};
-        inline Control(double gain, bool mute) : gain(gain), mute(mute){};
+        inline Control() : Control(0, 0, false){};
+        inline Control(double gain, double pan, bool mute) : gain(gain), pan(pan), mute(mute){};
     };
 
     // 音轨主控
     struct TrackControl : public Control {
-        double pan;
         bool solo;
 
         // 构造器
-        inline TrackControl() : TrackControl(0, false){};
-        inline TrackControl(double pan, bool solo) : pan(pan), solo(solo){};
+        inline TrackControl() : TrackControl(false){};
+        inline TrackControl(bool solo) : solo(solo){};
         inline TrackControl(double gain, double pan, bool mute, bool solo)
-            : Control(gain, mute), pan(pan), solo(solo){};
+            : Control(gain, pan, mute), solo(solo){};
     };
 
     // 泛型点

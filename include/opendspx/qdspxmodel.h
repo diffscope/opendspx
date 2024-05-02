@@ -23,9 +23,10 @@ namespace QDspx {
     };
 
     // 文件的元信息，包括版本号、工程名、作者等
-    struct Metadata {
+    struct Global {
         QString name;
         QString author;
+        int centShift;
     };
 
     // 总线控制
@@ -35,7 +36,7 @@ namespace QDspx {
 
     // 工程可编辑区域
     struct Content {
-        Metadata metadata;
+        Global global;
         Master master;
         Timeline timeline;
         QList<Track> tracks;
@@ -54,7 +55,7 @@ namespace QDspx {
         QByteArray saveData() const;
     };
 
-    QAS_JSON_NS(Metadata)
+    QAS_JSON_NS(Global)
 
     QAS_JSON_NS(Master)
 

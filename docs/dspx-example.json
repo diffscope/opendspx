@@ -1,13 +1,15 @@
 {
     "version": "1.0.0",
     "content": {
-        "metadata": {
+        "global": {
             "author": "作者",
-            "name": "这是一个示例工程"
+            "name": "这是一个示例工程",
+            "centShift": 0
         },
         "master": {
             "control": {
                 "gain": 0,
+                "pan": 0,
                 "mute": false
             }
         },
@@ -53,6 +55,7 @@
                         "name": "样式 1",
                         "control": {
                             "gain": 1,
+                            "pan": 0,
                             "mute": false
                         },
                         "sources": {
@@ -70,6 +73,7 @@
                                 "pos": 480,
                                 "length": 480,
                                 "keyNum": 60,
+                                "centShift": 0,
                                 "language": "zh_CN",
                                 "lyric": "拉",
                                 "pronunciation": {
