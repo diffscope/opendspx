@@ -3,23 +3,24 @@
 
 #include <opendspx/qdspxbase.h>
 
-namespace QDspx {
-
+namespace QDspx
+{
     // 参数曲线基类
     struct ParamCurve {
         enum Type {
             __qas_attr__("anchor") //
             Anchor,
-            __qas_attr__("free")   //
+            __qas_attr__("free") //
             Free,
         };
+
         QAS_JSON(Type)
 
         Type type;
 
         // 构造器
-        ParamCurve() : ParamCurve(Anchor){};
-        inline explicit ParamCurve(Type type) : type(type){};
+        ParamCurve() : ParamCurve(Anchor) {};
+        inline explicit ParamCurve(Type type) : type(type) {};
         virtual ~ParamCurve() = default;
     };
 
@@ -32,8 +33,8 @@ namespace QDspx {
         QList<int> values;
 
         // 构造器
-        inline ParamFree() : ParamFree(0){};
-        inline explicit ParamFree(int start) : ParamCurve(Free), start(start), step(5){};
+        inline ParamFree() : ParamFree(0) {};
+        inline explicit ParamFree(int start) : ParamCurve(Free), start(start), step(5) {};
     };
 
     using ParamFreeRef = QSharedPointer<ParamFree>;
@@ -44,7 +45,7 @@ namespace QDspx {
         QList<AnchorPoint> nodes;
 
         // 构造器
-        inline ParamAnchor() : ParamCurve(Anchor){};
+        inline ParamAnchor() : ParamCurve(Anchor) {};
     };
 
     using ParamAnchorRef = QSharedPointer<ParamAnchor>;
@@ -64,7 +65,11 @@ namespace QDspx {
         ParamInfo pitch;
         ParamInfo energy;
         ParamInfo tension;
+        ParamInfo voicing;
         ParamInfo breathiness;
+        ParamInfo velocity;
+        ParamInfo gender;
+        ParamInfo expressiveness;
     };
 
     QAS_JSON_NS(ParamCurve)
@@ -73,7 +78,6 @@ namespace QDspx {
     QAS_JSON_NS(ParamInfo)
     QAS_JSON_NS(SingleParam)
     QAS_JSON_NS_IMPL(ParamCurveRef)
-
 }
 
 #endif // QDSPXPARAM_H
