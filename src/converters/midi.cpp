@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <functional>
+#include <iostream>
 
 #include <QFile>
 #include <QPoint>
@@ -88,7 +89,7 @@ namespace QDspx
                     break;
                 case QMidiEvent::TimeSignature:
                     {
-                        QPoint sig(QPoint(data[0], 2 ^ data[1]));
+                        auto sig(QPoint(data[0], 2 ^ data[1]));
                         if (sig.x() == 0 || sig.y() == 0)
                             break;
                         timeSign.insert(e->tick(), sig);
@@ -337,16 +338,16 @@ namespace QDspx
         // TempoMap Track Data
         QDspx::Timeline timeLine;
 
-        QDspx::TimeSignature timeSignature;
         for (auto it = timeSign.begin(); it != timeSign.end(); ++it) {
+            QDspx::TimeSignature timeSignature;
             timeSignature.pos = static_cast<int>(it.key() * scaleFactor);
             timeSignature.num = it->x();
             timeSignature.den = it->y();
             timeLine.timeSignatures.append(timeSignature);
         }
 
-        QDspx::Tempo tempo;
         for (auto it = tempos.begin(); it != tempos.end(); ++it) {
+            QDspx::Tempo tempo;
             tempo.pos = it.key();
             tempo.value = it.value();
             timeLine.tempos.append(tempo);
