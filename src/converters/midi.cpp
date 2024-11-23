@@ -431,7 +431,7 @@ namespace QDspx
         // track
         QList<QPair<int, QDspx::Note>> overlapNotes;
         for (int trackId = 0; trackId < trackNum; trackId++) {
-            auto [name, control, clips, extra, workspace] = in.content.tracks[trackId];
+            auto [name, control, clips,language,g2pId, extra, workspace] = in.content.tracks[trackId];
             midi.createTrack();
             const auto utf8Name = codec->fromUnicode(name).toStdString();
             midi.createMetaEvent(trackId + 1, 0, Midi::MidiEvent::MetaNumbers::TrackName,
