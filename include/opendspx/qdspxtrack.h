@@ -4,8 +4,8 @@
 #include <opendspx/qdspxparam.h>
 #include <opendspx/qdspxnote.h>
 
-namespace QDspx {
-
+namespace QDspx
+{
     // 音轨区间时间信息
     struct ClipTime {
         int start;
@@ -14,10 +14,11 @@ namespace QDspx {
         int clipLen;
 
         // 构造器
-        inline ClipTime() : ClipTime(0, 4800){};
-        inline ClipTime(int start, int length) : ClipTime(start, length, 0, length){};
+        inline ClipTime() : ClipTime(0, 4800) {};
+        inline ClipTime(int start, int length) : ClipTime(start, length, 0, length) {};
+
         inline ClipTime(int start, int length, int clipStart, int clipLen)
-            : start(start), length(length), clipStart(clipStart), clipLen(clipLen){};
+            : start(start), length(length), clipStart(clipStart), clipLen(clipLen) {};
     };
 
     // 音轨区间
@@ -42,8 +43,8 @@ namespace QDspx {
         Workspace workspace;
 
         // 构造器
-        inline Clip() : type(Singing){};
-        inline explicit Clip(Type type) : type(type){};
+        inline Clip() : type(Singing) {};
+        inline explicit Clip(Type type) : type(type) {};
         virtual ~Clip() = default;
     };
 
@@ -54,7 +55,7 @@ namespace QDspx {
         QString path;
 
         // 构造器
-        AudioClip() : Clip(Audio){};
+        AudioClip() : Clip(Audio) {};
     };
 
     using AudioClipRef = QSharedPointer<AudioClip>;
@@ -64,11 +65,14 @@ namespace QDspx {
         QList<Note> notes;
         SingleParam params;
 
+        QString language;
+        QString g2pId;
+
         // 不定长信息
         SourceInfo sources;
 
         // 构造器
-        SingingClip() : Clip(Singing){};
+        SingingClip() : Clip(Singing) {};
     };
 
     using SingingClipRef = QSharedPointer<SingingClip>;
@@ -78,6 +82,9 @@ namespace QDspx {
         QString name;
         TrackControl control;
         QList<ClipRef> clips;
+
+        QString language;
+        QString g2pId;
 
         // 不定长信息
         Extra extra;
@@ -90,7 +97,6 @@ namespace QDspx {
     QAS_JSON_NS(SingingClip)
     QAS_JSON_NS(Track)
     QAS_JSON_NS_IMPL(ClipRef)
-
 }
 
 #endif // QDSPXTRACK_H

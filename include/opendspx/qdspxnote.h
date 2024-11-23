@@ -3,18 +3,19 @@
 
 #include <opendspx/qdspxbase.h>
 
-namespace QDspx {
-
+namespace QDspx
+{
     // 音素
     struct Phoneme {
         enum Type {
-            __qas_attr__("ahead")  //
+            __qas_attr__("ahead") //
             Ahead,
             __qas_attr__("normal") //
             Normal,
-            __qas_attr__("final")  //
+            __qas_attr__("final") //
             Final,
         };
+
         QAS_JSON(Type)
 
         Type type;
@@ -26,7 +27,7 @@ namespace QDspx {
         Workspace workspace;
 
         // 构造器
-        inline Phoneme() : type(Normal), start(0){};
+        inline Phoneme() : type(Normal), start(0) {};
     };
 
     // 音素信息
@@ -48,7 +49,7 @@ namespace QDspx {
         QList<DoublePoint> points;
 
         // 构造器
-        inline VibratoInfo() : start(0), end(1), freq(2), phase(0), amp(1), offset(0){};
+        inline VibratoInfo() : start(0), end(1), freq(2), phase(0), amp(1), offset(0) {};
     };
 
     // 发音
@@ -66,6 +67,7 @@ namespace QDspx {
         int centShift;
         QString language;
         QString lyric;
+        QString g2pId;
         Pronunciation pronunciation;
         PhonemeInfo phonemes;
         VibratoInfo vibrato;
@@ -75,8 +77,8 @@ namespace QDspx {
         Workspace workspace;
 
         // 构造器
-        inline Note() : Note(0, 480, 60){};
-        inline Note(int pos, int length, int keyNum) : pos(pos), length(length), keyNum(keyNum){};
+        inline Note() : Note(0, 480, 60) {};
+        inline Note(int pos, int length, int keyNum) : pos(pos), length(length), keyNum(keyNum) {};
     };
 
     QAS_JSON_NS(Phoneme)
@@ -84,7 +86,6 @@ namespace QDspx {
     QAS_JSON_NS(VibratoInfo)
     QAS_JSON_NS(Pronunciation)
     QAS_JSON_NS(Note)
-
 }
 
 #endif // QDSPXNOTE_H

@@ -9,7 +9,7 @@
 #include <QString>
 #include <QTextCodec>
 
-#include <QMidiFile.h>
+#include <wolf-midi/MidiFile.h>
 
 namespace QDspx
 {
@@ -18,7 +18,7 @@ namespace QDspx
     // Import MIDI file to QDspxModel.
 
     // Convert note number to note name.
-    QString ToneNumToToneName(int num) {
+    QString ToneNumToToneName(const int num) {
         static const QString tones[] = {
             "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B",
         };
@@ -41,8 +41,8 @@ namespace QDspx
 
     // Load MIDI file to QDspxModel.
     Result MidiConverter::load(const QString& path, Model* out, const QVariantMap& args) {
-        QMidiFile midi;
-        if (!midi.load(path)) {
+        Midi::MidiFile midi;
+        if (!midi.load(path.toStdString())) {
             return {Result::File, QFileDevice::ReadError}; // Ignore concrete error type
         }
 
@@ -58,7 +58,7 @@ namespace QDspx
             return {Result::Empty};
         } else if (midiFormat == 0 && tracksCount > 1) {
             return {Result::InvalidFormat};
-        } else if (midiFormat == 2 || divType != QMidiFile::PPQ) {
+        } else if (midiFormat == 2 || divType != Midi::MidiFile::PPQ) {
             return {UnsupportedType};
         }
 
@@ -74,20 +74,20 @@ namespace QDspx
         timeSign.insert(0, QPoint(4, 4));
 
         // Parsing Meta Event of Track 0(Track 0 is the tempo map)
-        QList<QMidiEvent*> tempMap = midi.eventsForTrack(0);
+        std::vector<Midi::MidiEvent*> tempMap = midi.eventsForTrack(0);
 
         // Parsing Meta Event
         for (auto e : std::as_const(tempMap)) {
             const auto& data = e->data();
-            if (e->type() == QMidiEvent::Meta) {
+            if (e->type() == Midi::MidiEvent::Meta) {
                 switch (e->number()) {
-                case QMidiEvent::Tempo:
+                case Midi::MidiEvent::Tempo:
                     tempos.insert(e->tick(), e->tempo());
                     break;
-                case QMidiEvent::Marker:
-                    markers.append(qMakePair(e->tick(), data));
+                case Midi::MidiEvent::Marker:
+                    markers.append(qMakePair(e->tick(), QByteArray(data)));
                     break;
-                case QMidiEvent::TimeSignature:
+                case Midi::MidiEvent::TimeSignature:
                     {
                         auto sig(QPoint(data[0], 2 ^ data[1]));
                         if (sig.x() == 0 || sig.y() == 0)
@@ -151,7 +151,7 @@ namespace QDspx
 
         // Parsing Midi Event.
         for (int i = midiFormat; i < tracksCount; ++i) {
-            QList<QMidiEvent*> list = midi.eventsForTrack(i);
+            std::vector<Midi::MidiEvent*> list = midi.eventsForTrack(i);
             qint32 trackIndex = i - midiFormat + 1;
 
             TrackNameAndLyrics cur;
@@ -161,14 +161,14 @@ namespace QDspx
             for (auto e : list) {
                 // Parsing Meta Event
                 switch (e->type()) {
-                case QMidiEvent::Meta:
+                case Midi::MidiEvent::Meta:
                     {
                         switch (e->number()) {
-                        case QMidiEvent::TrackName:
-                            cur.name = e->data();
+                        case Midi::MidiEvent::TrackName:
+                            cur.name = QByteArray(e->data());
                             break;
-                        case QMidiEvent::Lyric:
-                            cur.lyrics.insert(e->tick(), e->data());
+                        case Midi::MidiEvent::Lyric:
+                            cur.lyrics.insert(e->tick(), QByteArray(e->data()));
                             break;
                         default:
                             break;
@@ -176,7 +176,7 @@ namespace QDspx
                         break;
                     }
                 // Parsing Note Event
-                case QMidiEvent::NoteOn:
+                case Midi::MidiEvent::NoteOn:
                     {
                         // Add packed(track, channel, 0)
                         logicIndexSet.insert(LogicIndex(trackIndex, e->voice(), 0).toInt());
@@ -185,7 +185,7 @@ namespace QDspx
                             .first.append(e->tick());
                         break;
                     }
-                case QMidiEvent::NoteOff:
+                case Midi::MidiEvent::NoteOff:
                     {
                         // Add packed(track, channel, key), noteOff pos.
                         pitchNoteMap[LogicIndex(trackIndex, e->voice(), e->note()).toInt()]
@@ -398,9 +398,9 @@ namespace QDspx
     }
 
     Result MidiConverter::save(const QString& path, const Model& in, const QVariantMap& args) {
-        QMidiFile midi;
+        Midi::MidiFile midi;
         midi.setFileFormat(1);
-        midi.setDivisionType(QMidiFile::DivisionType::PPQ);
+        midi.setDivisionType(Midi::MidiFile::DivisionType::PPQ);
         midi.setResolution(480);
 
         // Convert
@@ -414,13 +414,7 @@ namespace QDspx
 
         // timeSignature
         for (const auto& timeSignature : timeLine.timeSignatures) {
-            QByteArray buf;
-            buf.resize(4);
-            buf[0] = static_cast<char>(timeSignature.num);
-            buf[1] = static_cast<char>(std::log2(timeSignature.den));
-            buf[2] = 24;
-            buf[3] = 8;
-            midi.createMetaEvent(0, timeSignature.pos, QMidiEvent::TimeSignature, buf);
+            midi.createTimeSignatureEvent(0, timeSignature.pos, timeSignature.num, timeSignature.den);
         }
 
         // tempos
@@ -430,20 +424,22 @@ namespace QDspx
 
         // label
         for (const auto& label : timeLine.labels) {
-            midi.createMarkerEvent(0, label.pos, codec->fromUnicode(label.text));
+            const auto utf8Str = codec->fromUnicode(label.text).toStdString();
+            midi.createMarkerEvent(0, label.pos, {utf8Str.begin(), utf8Str.end()});
         }
 
         // track
         QList<QPair<int, QDspx::Note>> overlapNotes;
         for (int trackId = 0; trackId < trackNum; trackId++) {
-            QDspx::Track track = in.content.tracks[trackId];
+            auto [name, control, clips, extra, workspace] = in.content.tracks[trackId];
             midi.createTrack();
-            midi.createMetaEvent(trackId + 1, 0, QMidiEvent::MetaNumbers::TrackName,
-                                 codec->fromUnicode(track.name));
+            const auto utf8Name = codec->fromUnicode(name).toStdString();
+            midi.createMetaEvent(trackId + 1, 0, Midi::MidiEvent::MetaNumbers::TrackName,
+                                 {utf8Name.begin(), utf8Name.end()});
 
 
             // clip
-            for (const auto& clip : track.clips) {
+            for (const auto& clip : clips) {
                 if (clip->type == QDspx::Clip::Singing) {
                     auto singingClip = clip.dynamicCast<QDspx::SingingClip>();
 
@@ -456,8 +452,8 @@ namespace QDspx
                                 overlapNotes.append(qMakePair(trackId, note));
                             }
                             int noteEnd = note.pos + note.length;
-                            midi.createLyricEvent(trackId + 1, note.pos,
-                                                  codec->fromUnicode(note.lyric));
+                            const auto utf8Str = codec->fromUnicode(note.lyric);
+                            midi.createLyricEvent(trackId + 1, note.pos, {utf8Str.begin(), utf8Str.end()});
                             midi.createNoteOnEvent(trackId + 1, note.pos, 0, note.keyNum, 64);
                             midi.createNoteOffEvent(trackId + 1, std::min(noteEnd, clipEnd), 0,
                                                     note.keyNum, 64);
@@ -479,7 +475,7 @@ namespace QDspx
             }
         }
 
-        if (!midi.save(path)) {
+        if (!midi.save(path.toStdString())) {
             return {Result::File, QFileDevice::WriteError}; // Ignore concrete error type
         }
 
