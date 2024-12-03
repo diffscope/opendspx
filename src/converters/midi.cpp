@@ -85,7 +85,7 @@ namespace QDspx
                     tempos.insert(e->tick(), e->tempo());
                     break;
                 case Midi::MidiEvent::Marker:
-                    markers.append(qMakePair(e->tick(), QByteArray(data)));
+                    markers.append(qMakePair(e->tick(), QByteArray(data.data())));
                     break;
                 case Midi::MidiEvent::TimeSignature:
                     {
@@ -163,12 +163,13 @@ namespace QDspx
                 switch (e->type()) {
                 case Midi::MidiEvent::Meta:
                     {
+                        const auto& data = e->data();
                         switch (e->number()) {
                         case Midi::MidiEvent::TrackName:
-                            cur.name = QByteArray(e->data());
+                            cur.name = QByteArray(data.data());
                             break;
                         case Midi::MidiEvent::Lyric:
-                            cur.lyrics.insert(e->tick(), QByteArray(e->data()));
+                            cur.lyrics.insert(e->tick(), QByteArray(data.data()));
                             break;
                         default:
                             break;
