@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
                 QVariant::fromValue(reinterpret_cast<quintptr>(&midiSelector)));
 
     const auto midi = new QDspx::MidiConverter();
-    const auto returnCode = midi->load(midiFilePath, dspx, args);
+    const auto returnCode = midi->load(QString::fromLocal8Bit(midiFilePath), dspx, args);
 
     std::cout << "returnCode: " << returnCode.code << " type: " << returnCode.type << std::endl;
 

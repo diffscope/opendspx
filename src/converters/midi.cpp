@@ -42,7 +42,7 @@ namespace QDspx
     // Load MIDI file to QDspxModel.
     Result MidiConverter::load(const QString& path, Model* out, const QVariantMap& args) {
         Midi::MidiFile midi;
-        if (!midi.load(path.toStdString())) {
+        if (!midi.load(path.toLocal8Bit().toStdString())) {
             return {Result::File, QFileDevice::ReadError}; // Ignore concrete error type
         }
 
@@ -85,14 +85,16 @@ namespace QDspx
                     tempos.insert(e->tick(), e->tempo());
                     break;
                 case Midi::MidiEvent::Marker:
-                    markers.append(qMakePair(e->tick(), QByteArray(data.data())));
+                    markers.append(qMakePair(e->tick(), QByteArray(data.data(), static_cast<qsizetype>(data.size()))));
                     break;
                 case Midi::MidiEvent::TimeSignature:
                     {
-                        auto sig(QPoint(data[0], 2 ^ data[1]));
-                        if (sig.x() == 0 || sig.y() == 0)
-                            break;
-                        timeSign.insert(e->tick(), sig);
+                        if (data.size() > 1) {
+                            auto sig(QPoint(data[0], 2 ^ data[1]));
+                            if (sig.x() == 0 || sig.y() == 0)
+                                break;
+                            timeSign.insert(e->tick(), sig);
+                        }
                         break;
                     }
                 default:
@@ -166,10 +168,10 @@ namespace QDspx
                         const auto& data = e->data();
                         switch (e->number()) {
                         case Midi::MidiEvent::TrackName:
-                            cur.name = QByteArray(data.data());
+                            cur.name = QByteArray(data.data(), static_cast<qsizetype>(data.size()));
                             break;
                         case Midi::MidiEvent::Lyric:
-                            cur.lyrics.insert(e->tick(), QByteArray(data.data()));
+                            cur.lyrics.insert(e->tick(), QByteArray(data.data(), static_cast<qsizetype>(data.size())));
                             break;
                         default:
                             break;
@@ -476,7 +478,7 @@ namespace QDspx
             }
         }
 
-        if (!midi.save(path.toStdString())) {
+        if (!midi.save(path.toLocal8Bit().toStdString())) {
             return {Result::File, QFileDevice::WriteError}; // Ignore concrete error type
         }
 
