@@ -7,9 +7,9 @@ namespace QDspx {
 
     struct Model {
         enum Version {
-            V1_0_0,
+            V1,
         };
-        Version version{V1_0_0};
+        Version version{V1};
         Content content;
     };
 

@@ -4,7 +4,9 @@
 #include <QList>
 #include <QString>
 
+#include <opendspx/audioclip.h>
 #include <opendspx/clip.h>
+#include <opendspx/singingclip.h>
 #include <opendspx/trackcontrol.h>
 #include <opendspx/workspace.h>
 

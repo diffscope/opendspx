@@ -20,6 +20,11 @@ namespace QDspx {
         BusControl control;
         ClipTime time;
         Workspace workspace;
+
+    protected:
+        Clip(Type type, const QString &name = {}, const BusControl &control = {}, const ClipTime &time = {}, const Workspace &workspace = {})
+            : type(type), name(name), control(control), time(time), workspace(workspace) {
+        }
     };
 
     using ClipRef = QSharedPointer<Clip>;
