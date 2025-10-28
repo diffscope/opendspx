@@ -13,7 +13,8 @@ namespace QDspx {
     public:
         enum Type {
             JsonParseFailure = 0x0001,
-            UnrecognizedVersion = 0x0002,
+            JsonRootIsNotObject = 0x0002,
+            UnrecognizedVersion = 0x0003,
             InvalidDataType = 0x1001,
             InvalidObjectType = 0x1002,
             RangeConstraintViolation = 0x1101,
@@ -26,8 +27,17 @@ namespace QDspx {
             ErroneousClipPosition = 0x2102,
             SafeRangeLimitExceeded = 0x2C01,
         };
-        Type type() {
+        Type type() const {
             return m_type;
+        }
+        bool isFatal() const {
+            return (m_type & 0xF000) == 0x0000;
+        }
+        bool isError() const {
+            return (m_type & 0xF000) == 0x1000;
+        }
+        bool isWarning() const {
+            return (m_type & 0xF000) == 0x2000;
         }
 
     protected:
@@ -38,6 +48,8 @@ namespace QDspx {
         Type m_type;
 
     };
+
+    using SerializationErrorRef = QSharedPointer<SerializationError>;
 
     class JsonParseFailureError : public SerializationError {
     public:
@@ -51,16 +63,30 @@ namespace QDspx {
         QJsonParseError m_error;
     };
 
+    class JsonRootIsNotObjectError : public SerializationError {
+    public:
+        JsonRootIsNotObjectError()
+            : SerializationError(JsonRootIsNotObject) {
+        }
+    };
+
     class UnrecognizedVersionError : public SerializationError {
     public:
-        UnrecognizedVersionError(const QString &parsedVersion)
-            : SerializationError(UnrecognizedVersion), m_parsedVersion(parsedVersion) {
+        UnrecognizedVersionError(const QString &actualVersion)
+            : SerializationError(UnrecognizedVersion), m_actualVersion(actualVersion), m_actualVersionFlag(0) {
         }
-        QString parsedVersion() const {
-            return m_parsedVersion;
+        UnrecognizedVersionError(int actualVersionFlag)
+            : SerializationError(UnrecognizedVersion), m_actualVersionFlag(actualVersionFlag) {
+        }
+        QString actualVersion() const {
+            return m_actualVersion;
+        }
+        int actualVersionFlag() const {
+            return m_actualVersionFlag;
         }
     private:
-        QString m_parsedVersion;
+        QString m_actualVersion;
+        int m_actualVersionFlag;
     };
 
     class InvalidDataTypeError : public SerializationError {
@@ -75,8 +101,8 @@ namespace QDspx {
             Object,
         };
 
-        InvalidDataTypeError(const QString &path, DataType actualType, DataType expectedType)
-            : SerializationError(InvalidDataType), m_path(path), m_actualType(actualType), m_expectedType(expectedType) {
+        InvalidDataTypeError(const QString &path, DataType actualType, const QList<DataType> &expectedTypes)
+            : SerializationError(InvalidDataType), m_path(path), m_actualType(actualType), m_expectedTypes(expectedTypes) {
         }
 
         QString path() const {
@@ -85,14 +111,14 @@ namespace QDspx {
         DataType actualType() const {
             return m_actualType;
         }
-        DataType expectedType() const {
-            return m_expectedType;
+        QList<DataType> expectedTypes() const {
+            return m_expectedTypes;
         }
 
     private:
         QString m_path;
         DataType m_actualType;
-        DataType m_expectedType;
+        QList<DataType> m_expectedTypes;
 
     };
 
@@ -146,7 +172,7 @@ namespace QDspx {
 
     class EnumConstraintViolationError : public SerializationError {
     public:
-        EnumConstraintViolationError(const QString &path, const QVariant &actualEnumValue, const QStringList &expectedEnumValues)
+        EnumConstraintViolationError(const QString &path, const QVariant &actualEnumValue, const QVariantList &expectedEnumValues)
             : SerializationError(EnumConstraintViolation), m_path(path), m_actualEnumValue(actualEnumValue), m_expectedEnumValues(expectedEnumValues) {
         }
 
@@ -156,14 +182,14 @@ namespace QDspx {
         QVariant actualEnumValue() const {
             return m_actualEnumValue;
         }
-        QStringList expectedEnumValues() const {
+        QVariantList expectedEnumValues() const {
             return m_expectedEnumValues;
         }
 
     private:
         QString m_path;
         QVariant m_actualEnumValue;
-        QStringList m_expectedEnumValues;
+        QVariantList m_expectedEnumValues;
     };
 
     class MissingPropertyError : public SerializationError {
@@ -274,6 +300,37 @@ namespace QDspx {
 
     private:
         QString m_path;
+    };
+
+    class SerializationErrorList : public QList<SerializationErrorRef> {
+    public:
+        using QList::QList;
+
+        template<typename T, typename... Args>
+        void addError(Args &&... args) {
+            auto s = QSharedPointer<T>::create(std::forward<Args>(args)...);
+            append(s);
+            m_containsFatal = m_containsFatal || s->isFatal();
+            m_containsError = m_containsError || s->isError();
+            m_containsWarning = m_containsWarning || s->isWarning();
+        }
+
+        bool containsFatal() const {
+            return m_containsFatal;
+        }
+
+        bool containsError() const {
+            return m_containsError;
+        }
+
+        bool containsWarning() const {
+            return m_containsWarning;
+        }
+
+    private:
+        bool m_containsFatal = false;
+        bool m_containsError = false;
+        bool m_containsWarning = false;
     };
 
 }

@@ -7,8 +7,8 @@ namespace QDspx {
 
     struct Phoneme {
         QString language;
-        int start{0};
         QString token;
+        int start{0};
         bool onset{false};
     };
 
