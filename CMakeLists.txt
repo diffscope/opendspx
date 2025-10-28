@@ -72,6 +72,7 @@ endif()
 if (TRUE)
     # Add library
     add_library(${OPENDSPX_MODEL_TARGET} INTERFACE)
+    add_library(${PROJECT_NAME}::model ALIAS ${OPENDSPX_MODEL_TARGET})
 
     # Add features
     target_compile_features(${OPENDSPX_MODEL_TARGET} INTERFACE cxx_std_20 cxx_std_17)

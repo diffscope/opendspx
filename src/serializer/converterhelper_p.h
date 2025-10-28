@@ -29,7 +29,10 @@
     do { \
         if (!object.contains(#property)) \
             break; /* Suppose that property existency has been checked with `fromJsonObjectHelper` */ \
-        FROM_JSON_FAIL_FAST(entity##property, object.value(#property), parseFunc, ret); \
+        FAIL_FAST_RETURN(ret); \
+        auto v = parseFunc(object.value(#property), errors, options, path + "."#property); \
+        FAIL_FAST_RETURN(ret); \
+        entity##property = v; \
     } while (false)
 
 namespace QDspx {
@@ -90,7 +93,7 @@ namespace QDspx {
                 return 0;
             }
             auto v = value.toDouble();
-            if (v > maximum || v < minimum) {
+            if (v < minimum || (maximum >= minimum && v > maximum)) {
                 errors.addError<RangeConstraintViolationError>(path, v, minimum, maximum);
             }
             return v;
@@ -125,7 +128,7 @@ namespace QDspx {
                 return 0;
             }
             auto v = value.toInt();
-            if (v > maximum || v < minimum) {
+            if (v < minimum || (maximum >= minimum && v > maximum)) {
                 errors.addError<RangeConstraintViolationError>(path, v, minimum, maximum);
             }
             return v;
@@ -164,19 +167,35 @@ namespace QDspx {
                 errors.addError<InvalidDataTypeError>(path, actualType, QList{Flag});
                 return {};
             }
-            auto s = value.toVariant().value<K>();
-            auto it = std::ranges::find_if(enumValues, [s](const auto &pair) {
-                return pair.first == s;
-            });
-            if (it == enumValues.end()) {
+            bool ok;
+            T ret;
+            if constexpr (std::is_same_v<K, const char *>) {
+                auto s = value.toString();
+                auto it = std::ranges::find_if(enumValues, [s](const auto &pair) {
+                    return pair.first == s;
+                });
+                ok = it != enumValues.end();
+                ret = ok ? it->second : T{};
+            } else if constexpr (std::is_same_v<K, int>) {
+                auto s = value.toInt();
+                auto it = std::ranges::find_if(enumValues, [s](const auto &pair) {
+                    return pair.first == s;
+                });
+                ok = it != enumValues.end();
+                ret = ok ? it->second : T{};
+            } else {
+                static_assert(false);
+            }
+
+            if (!ok) {
                 QVariantList a;
                 for (auto &pair : enumValues) {
                     a.append(pair.first);
                 }
-                errors.addError<EnumConstraintViolationError>(path, s, a);
+                errors.addError<EnumConstraintViolationError>(path, ret, a);
                 return {};
             }
-            return it->second;
+            return ret;
         }
 
         std::array<QPair<K, T>, N> enumValues;
