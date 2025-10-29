@@ -11,8 +11,8 @@
 namespace QDspx {
 
     struct SingingClip : Clip {
-        SingingClip(const QString &name = {}, const BusControl &control = {}, const ClipTime &time = {}, const Workspace &workspace = {})
-            : Clip(Singing, name, control, time, workspace) {
+        SingingClip(const QString &name = {}, const BusControl &control = {}, const ClipTime &time = {}, const Workspace &workspace = {}, const QList<Note> &notes = {}, const Params &params = {}, const Sources &sources = {})
+            : Clip(Singing, name, control, time, workspace), notes(notes), params(params), sources(sources) {
         }
 
         QList<Note> notes;

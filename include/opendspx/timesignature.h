@@ -5,8 +5,8 @@ namespace QDspx {
 
     struct TimeSignature {
         int index{0};
-        int denominator{4};
         int numerator{4};
+        int denominator{4};
     };
 
 }

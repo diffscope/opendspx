@@ -6,8 +6,8 @@
 namespace QDspx {
 
     struct Pronunciation {
-        QString edited;
         QString original;
+        QString edited;
     };
 
 }
