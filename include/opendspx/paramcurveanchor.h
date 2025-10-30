@@ -9,8 +9,8 @@
 namespace QDspx {
 
     struct ParamCurveAnchor : ParamCurve {
-        ParamCurveAnchor(int start = 0)
-            : ParamCurve(Anchor, start) {
+        ParamCurveAnchor(int start = 0, const QList<AnchorNode> &nodes = {})
+            : ParamCurve(Anchor, start), nodes(nodes) {
         }
 
         QList<AnchorNode> nodes;

@@ -8,8 +8,8 @@
 namespace QDspx {
 
     struct ParamCurveFree : ParamCurve {
-        ParamCurveFree(int start = 0, int step = 5)
-            : ParamCurve(Free, start), step(step) {
+        ParamCurveFree(int start = 0, int step = 5, const QList<int> &values = {})
+            : ParamCurve(Free, start), step(step), values(values) {
         }
 
         int step;
