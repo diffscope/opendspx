@@ -6,28 +6,23 @@
 #include <opendspx/model.h>
 #include <opendspxserializer/serializationerror.h>
 
-#include "converterhelper_p.h"
+#include "converterhelperfromjson_p.h"
+#include "converterhelpertojson_p.h"
 
 namespace QDspx{
+
+    constexpr auto INTERP_ENUM_DEFS = std::array{
+        QPair{"none", AnchorNode::None},
+        QPair{"linear", AnchorNode::Linear},
+        QPair{"hermite", AnchorNode::Hermite}
+    };
 
     template <>
     QJsonValue JsonConverterV1::toJson<AnchorNode>(const AnchorNode &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
         QJsonObject object;
-        object.insert("x", entity.x);
-        object.insert("y", entity.y);
-        QString interpString;
-        switch (entity.interp) {
-            case AnchorNode::None:
-                interpString = "none";
-                break;
-            case AnchorNode::Linear:
-                interpString = "linear";
-                break;
-            case AnchorNode::Hermite:
-                interpString = "hermite";
-                break;
-        }
-        object.insert("interp", interpString);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., x, toJsonNumberHelperWithConstraint(0), object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., y, toJsonTrivial, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., interp, toJsonEnumHelper(INTERP_ENUM_DEFS), object);
         return object;
     }
 
@@ -38,11 +33,7 @@ namespace QDspx{
         AnchorNode node;
         FROM_JSON_PROPERTY_FAIL_FAST(node., x, fromJsonIntHelperWithConstraint(0), node);
         FROM_JSON_PROPERTY_FAIL_FAST(node., y, fromJsonIntHelper, node);
-        FROM_JSON_PROPERTY_FAIL_FAST(node., interp, fromJsonEnumHelper(std::array{
-            QPair{"none", AnchorNode::None},
-            QPair{"linear", AnchorNode::Linear},
-            QPair{"hermite", AnchorNode::Hermite}
-        }), node);
+        FROM_JSON_PROPERTY_FAIL_FAST(node., interp, fromJsonEnumHelper(INTERP_ENUM_DEFS), node);
         return node;
     }
 
@@ -50,11 +41,11 @@ namespace QDspx{
     QJsonValue JsonConverterV1::toJson<QSharedPointer<AudioClip>>(const AudioClipRef &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
         QJsonObject object;
         object.insert("type", "audio");
-        object.insert("name", entity->name);
-        object.insert("control", toJson<BusControl>(entity->control, errors, options, path + ".control"));
-        object.insert("time", toJson<ClipTime>(entity->time, errors, options, path + ".time"));
-        object.insert("path", entity->path);
-        object.insert("workspace", toJson<Workspace>(entity->workspace, errors, options, path + ".workspace"));
+        TO_JSON_PROPERTY_FAIL_FAST(entity->, name, toJsonTrivial, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity->, control, toJson, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity->, time, toJson, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity->, path, toJsonTrivial, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity->, workspace, toJson, object);
         return object;
     }
 
@@ -74,9 +65,9 @@ namespace QDspx{
     template <>
     QJsonValue JsonConverterV1::toJson<BusControl>(const BusControl &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
         QJsonObject object;
-        object.insert("gain", entity.gain);
-        object.insert("pan", entity.pan);
-        object.insert("mute", entity.mute);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., gain, toJsonNumberHelperWithConstraint(0), object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., pan, toJsonNumberHelperWithConstraint(-1, 1), object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., mute, toJsonTrivial, object);
         return object;
     }
 
@@ -94,10 +85,10 @@ namespace QDspx{
     template <>
     QJsonValue JsonConverterV1::toJson<ClipTime>(const ClipTime &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
         QJsonObject object;
-        object.insert("start", entity.start);
-        object.insert("length", entity.length);
-        object.insert("clipStart", entity.clipStart);
-        object.insert("clipLen", entity.clipLen);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., start, toJsonTrivial, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., length, toJsonNumberHelperWithConstraint(0), object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., clipStart, toJsonNumberHelperWithConstraint(0), object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., clipLen, toJsonNumberHelperWithConstraint(0), object);
         return object;
     }
 
@@ -116,8 +107,8 @@ namespace QDspx{
     template <>
     QJsonValue JsonConverterV1::toJson<ControlPoint>(const ControlPoint &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
         QJsonObject object;
-        object.insert("x", entity.x);
-        object.insert("y", entity.y);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., x, toJsonTrivial, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., y, toJsonTrivial, object);
         return object;
     }
 
@@ -139,8 +130,7 @@ namespace QDspx{
             case Clip::Type::Singing:
                 return toJson<QSharedPointer<SingingClip>>(entity.staticCast<SingingClip>(), errors, options, path);
             default: {
-                // TODO error
-                return {};
+                Q_UNREACHABLE();
             }
         }
     }
@@ -163,11 +153,11 @@ namespace QDspx{
     template <>
     QJsonValue JsonConverterV1::toJson<Content>(const Content &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
         QJsonObject object;
-        object.insert("global", toJson<Global>(entity.global, errors, options, path + ".global"));
-        object.insert("master", toJson<Master>(entity.master, errors, options, path + ".master"));
-        object.insert("timeline", toJson<Timeline>(entity.timeline, errors, options, path + ".timeline"));
-        object.insert("tracks", toJson<QList<Track>>(entity.tracks, errors, options, path + ".tracks"));
-        object.insert("workspace", toJson<Workspace>(entity.workspace, errors, options, path + ".workspace"));
+        TO_JSON_PROPERTY_FAIL_FAST(entity., global, toJson, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., master, toJson, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., timeline, toJson, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., tracks, toJson, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., workspace, toJson, object);
         return object;
     }
 
@@ -187,11 +177,11 @@ namespace QDspx{
     template <>
     QJsonValue JsonConverterV1::toJson<Global>(const Global &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
         QJsonObject object;
-        object.insert("author", entity.author);
-        object.insert("name", entity.name);
-        object.insert("centShift", entity.centShift);
-        object.insert("editorId", entity.editorId);
-        object.insert("editorName", entity.editorName);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., author, toJsonTrivial, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., name, toJsonTrivial, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., centShift, toJsonNumberHelperWithConstraint(-50, 50), object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., editorId, toJsonTrivial, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., editorName, toJsonTrivial, object);
         return object;
     }
 
@@ -211,8 +201,8 @@ namespace QDspx{
     template <>
     QJsonValue JsonConverterV1::toJson<Label>(const Label &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
         QJsonObject object;
-        object.insert("pos", entity.pos);
-        object.insert("text", entity.text);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., pos, toJsonNumberHelperWithConstraint(0), object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., text, toJsonTrivial, object);
         return object;
     }
 
@@ -228,18 +218,18 @@ namespace QDspx{
 
     template <>
     QJsonValue JsonConverterV1::toJson<QList<Label>>(const QList<Label> &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
-        return toJsonArrayHelper(entity, errors, options, path);
+        return toJsonArrayHelper<Label, JsonConverterV1>(entity, errors, options, path);
     }
 
     template <>
     QList<Label> JsonConverterV1::fromJson<QList<Label>>(const QJsonValue &json, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
-        return fromJsonArrayHelper<Label>(json.toArray(), errors, options, path);
+        return fromJsonArrayHelper<Label, JsonConverterV1>(json, errors, options, path);
     }
 
     template <>
     QJsonValue JsonConverterV1::toJson<Master>(const Master &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
         QJsonObject object;
-        object.insert("control", toJson<BusControl>(entity.control, errors, options, path + ".control"));
+        TO_JSON_PROPERTY_FAIL_FAST(entity., control, toJson, object);
         return object;
     }
 
@@ -256,7 +246,7 @@ namespace QDspx{
     QJsonValue JsonConverterV1::toJson<Model>(const Model &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
         QJsonObject object;
         object.insert("version", "1.0.0");
-        object.insert("content", toJson<Content>(entity.content, errors, options, path + ".content"));
+        TO_JSON_PROPERTY_FAIL_FAST(entity., content, toJson, object);
         return object;
     }
 
@@ -273,16 +263,16 @@ namespace QDspx{
     template <>
     QJsonValue JsonConverterV1::toJson<Note>(const Note &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
         QJsonObject object;
-        object.insert("pos", entity.pos);
-        object.insert("length", entity.length);
-        object.insert("keyNum", entity.keyNum);
-        object.insert("centShift", entity.centShift);
-        object.insert("language", entity.language);
-        object.insert("lyric", entity.lyric);
-        object.insert("pronunciation", toJson<Pronunciation>(entity.pronunciation, errors, options, path + ".pronunciation"));
-        object.insert("phonemes", toJson<Phonemes>(entity.phonemes, errors, options, path + ".phonemes"));
-        object.insert("vibrato", toJson<Vibrato>(entity.vibrato, errors, options, path + ".vibrato"));
-        object.insert("workspace", toJson<Workspace>(entity.workspace, errors, options, path + ".workspace"));
+        TO_JSON_PROPERTY_FAIL_FAST(entity., pos, toJsonNumberHelperWithConstraint(0), object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., length, toJsonNumberHelperWithConstraint(0), object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., keyNum, toJsonNumberHelperWithConstraint(0, 127), object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., centShift, toJsonNumberHelperWithConstraint(-50, 50), object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., language, toJsonTrivial, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., lyric, toJsonTrivial, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., pronunciation, toJson, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., phonemes, toJson, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., vibrato, toJson, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., workspace, toJson, object);
         return object;
     }
 
@@ -306,20 +296,20 @@ namespace QDspx{
 
     template <>
     QJsonValue JsonConverterV1::toJson<QList<Note>>(const QList<Note> &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
-        return toJsonArrayHelper(entity, errors, options, path);
+        return toJsonArrayHelper<Note, JsonConverterV1>(entity, errors, options, path);
     }
 
     template <>
     QList<Note> JsonConverterV1::fromJson<QList<Note>>(const QJsonValue &json, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
-        return fromJsonArrayHelper<Note>(json.toArray(), errors, options, path);
+        return fromJsonArrayHelper<Note, JsonConverterV1>(json, errors, options, path);
     }
 
     template <>
     QJsonValue JsonConverterV1::toJson<Param>(const Param &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
         QJsonObject object;
-        object.insert("original", toJson<QList<ParamCurveRef>>(entity.original, errors, options, path + ".original"));
-        object.insert("transform", toJson<QList<ParamCurveRef>>(entity.transform, errors, options, path + ".transform"));
-        object.insert("edited", toJson<QList<ParamCurveRef>>(entity.edited, errors, options, path + ".edited"));
+        TO_JSON_PROPERTY_FAIL_FAST(entity., original, toJson, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., transform, toJson, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., edited, toJson, object);
         return object;
     }
 
@@ -342,8 +332,7 @@ namespace QDspx{
             case ParamCurve::Free:
                 return toJson<QSharedPointer<ParamCurveFree>>(entity.staticCast<ParamCurveFree>(), errors, options, path);
             default: {
-                // TODO error
-                return {};
+                Q_UNREACHABLE();
             }
         }
     }
@@ -367,8 +356,8 @@ namespace QDspx{
     QJsonValue JsonConverterV1::toJson<QSharedPointer<ParamCurveAnchor>>(const ParamCurveAnchorRef &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
         QJsonObject object;
         object.insert("type", "anchor");
-        object.insert("start", entity->start);
-        object.insert("nodes", toJson<QList<AnchorNode>>(entity->nodes, errors, options, path + ".nodes"));
+        TO_JSON_PROPERTY_FAIL_FAST(entity->, start, toJsonTrivial, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity->, nodes, toJson, object);
         return object;
     }
 
@@ -386,9 +375,9 @@ namespace QDspx{
     QJsonValue JsonConverterV1::toJson<QSharedPointer<ParamCurveFree>>(const ParamCurveFreeRef &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
         QJsonObject object;
         object.insert("type", "free");
-        object.insert("start", entity->start);
-        object.insert("step", entity->step);
-        object.insert("values", toJsonArrayHelper(entity->values, errors, options, path + ".values"));
+        TO_JSON_PROPERTY_FAIL_FAST(entity->, start, toJsonTrivial, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity->, step, toJsonNumberHelperWithConstraint(5, 5), object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity->, values, toJsonArrayHelper, object);
         return object;
     }
 
@@ -405,12 +394,12 @@ namespace QDspx{
 
     template <>
     QJsonValue JsonConverterV1::toJson<QList<ParamCurveRef>>(const QList<ParamCurveRef> &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
-        return toJsonArrayHelper(entity, errors, options, path);
+        return toJsonArrayHelper<ParamCurveRef, JsonConverterV1>(entity, errors, options, path);
     }
 
     template <>
     QList<ParamCurveRef> JsonConverterV1::fromJson<QList<ParamCurveRef>>(const QJsonValue &json, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
-        return fromJsonArrayHelper<ParamCurveRef>(json.toArray(), errors, options, path);
+        return fromJsonArrayHelper<ParamCurveRef, JsonConverterV1>(json, errors, options, path);
     }
 
     template <>
@@ -436,10 +425,10 @@ namespace QDspx{
     template <>
     QJsonValue JsonConverterV1::toJson<Phoneme>(const Phoneme &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
         QJsonObject object;
-        object.insert("language", entity.language);
-        object.insert("token", entity.token);
-        object.insert("start", entity.start);
-        object.insert("onset", entity.onset);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., language, toJsonTrivial, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., token, toJsonTrivial, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., start, toJsonTrivial, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., onset, toJsonTrivial, object);
         return object;
     }
 
@@ -457,19 +446,19 @@ namespace QDspx{
 
     template <>
     QJsonValue JsonConverterV1::toJson<QList<Phoneme>>(const QList<Phoneme> &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
-        return toJsonArrayHelper(entity, errors, options, path);
+        return toJsonArrayHelper<Phoneme, JsonConverterV1>(entity, errors, options, path);
     }
 
     template <>
     QList<Phoneme> JsonConverterV1::fromJson<QList<Phoneme>>(const QJsonValue &json, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
-        return fromJsonArrayHelper<Phoneme>(json.toArray(), errors, options, path);
+        return fromJsonArrayHelper<Phoneme, JsonConverterV1>(json, errors, options, path);
     }
 
     template <>
     QJsonValue JsonConverterV1::toJson<Phonemes>(const Phonemes &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
         QJsonObject object;
-        object.insert("original", toJson<QList<Phoneme>>(entity.original, errors, options, path + ".original"));
-        object.insert("edited", toJson<QList<Phoneme>>(entity.edited, errors, options, path + ".edited"));
+        TO_JSON_PROPERTY_FAIL_FAST(entity., original, toJson, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., edited, toJson, object);
         return object;
     }
 
@@ -486,8 +475,8 @@ namespace QDspx{
     template <>
     QJsonValue JsonConverterV1::toJson<Pronunciation>(const Pronunciation &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
         QJsonObject object;
-        object.insert("original", entity.original);
-        object.insert("edited", entity.edited);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., original, toJsonTrivial, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., edited, toJsonTrivial, object);
         return object;
     }
 
@@ -505,13 +494,13 @@ namespace QDspx{
     QJsonValue JsonConverterV1::toJson<QSharedPointer<SingingClip>>(const SingingClipRef &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
         QJsonObject object;
         object.insert("type", "singing");
-        object.insert("name", entity->name);
-        object.insert("control", toJson<BusControl>(entity->control, errors, options, path + ".control"));
-        object.insert("time", toJson<ClipTime>(entity->time, errors, options, path + ".time"));
-        object.insert("notes", toJson<QList<Note>>(entity->notes, errors, options, path + ".notes"));
-        object.insert("params", toJson<Params>(entity->params, errors, options, path + ".params"));
-        object.insert("sources", toJson<Sources>(entity->sources, errors, options, path + ".sources"));
-        object.insert("workspace", toJson<Workspace>(entity->workspace, errors, options, path + ".workspace"));
+        TO_JSON_PROPERTY_FAIL_FAST(entity->, name, toJsonTrivial, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity->, control, toJson, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity->, time, toJson, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity->, notes, toJson, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity->, params, toJson, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity->, sources, toJson, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity->, workspace, toJson, object);
         return object;
     }
 
@@ -555,8 +544,8 @@ namespace QDspx{
     template <>
     QJsonValue JsonConverterV1::toJson<Tempo>(const Tempo &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
         QJsonObject object;
-        object.insert("pos", entity.pos);
-        object.insert("value", entity.value);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., pos, toJsonNumberHelperWithConstraint(0), object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., value, toJsonNumberHelperWithConstraint(10, 1000), object);
         return object;
     }
 
@@ -572,20 +561,31 @@ namespace QDspx{
 
     template <>
     QJsonValue JsonConverterV1::toJson<QList<Tempo>>(const QList<Tempo> &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
-        return toJsonArrayHelper(entity, errors, options, path);
+        return toJsonArrayHelper<Tempo, JsonConverterV1>(entity, errors, options, path);
     }
 
     template <>
     QList<Tempo> JsonConverterV1::fromJson<QList<Tempo>>(const QJsonValue &json, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
-        return fromJsonArrayHelper<Tempo>(json.toArray(), errors, options, path);
+        return fromJsonArrayHelper<Tempo, JsonConverterV1>(json, errors, options, path);
     }
+
+    constexpr auto DENOMINATOR_ENUM_DEFS = std::array{
+        QPair{1, 1},
+        QPair{2, 2},
+        QPair{4, 4},
+        QPair{8, 8},
+        QPair{16, 16},
+        QPair{32, 32},
+        QPair{64, 64},
+        QPair{128, 128}
+    };
 
     template <>
     QJsonValue JsonConverterV1::toJson<TimeSignature>(const TimeSignature &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
         QJsonObject object;
-        object.insert("index", entity.index);
-        object.insert("numerator", entity.numerator);
-        object.insert("denominator", entity.denominator);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., index, toJsonNumberHelperWithConstraint(0), object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., numerator, toJsonNumberHelperWithConstraint(1), object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., denominator, toJsonEnumHelper(DENOMINATOR_ENUM_DEFS), object);
         return object;
     }
 
@@ -596,35 +596,26 @@ namespace QDspx{
         TimeSignature sig;
         FROM_JSON_PROPERTY_FAIL_FAST(sig., index, fromJsonIntHelperWithConstraint(0), sig);
         FROM_JSON_PROPERTY_FAIL_FAST(sig., numerator, fromJsonIntHelperWithConstraint(1), sig);
-        FROM_JSON_PROPERTY_FAIL_FAST(sig., denominator, fromJsonEnumHelper(std::array{
-            QPair{1, 1},
-            QPair{2, 2},
-            QPair{4, 4},
-            QPair{8, 8},
-            QPair{16, 16},
-            QPair{32, 32},
-            QPair{64, 64},
-            QPair{128, 128}
-        }), {});
+        FROM_JSON_PROPERTY_FAIL_FAST(sig., denominator, fromJsonEnumHelper(DENOMINATOR_ENUM_DEFS), sig);
         return sig;
     }
 
     template <>
     QJsonValue JsonConverterV1::toJson<QList<TimeSignature>>(const QList<TimeSignature> &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
-        return toJsonArrayHelper(entity, errors, options, path);
+        return toJsonArrayHelper<TimeSignature, JsonConverterV1>(entity, errors, options, path);
     }
 
     template <>
     QList<TimeSignature> JsonConverterV1::fromJson<QList<TimeSignature>>(const QJsonValue &json, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
-        return fromJsonArrayHelper<TimeSignature>(json.toArray(), errors, options, path);
+        return fromJsonArrayHelper<TimeSignature, JsonConverterV1>(json, errors, options, path);
     }
 
     template <>
     QJsonValue JsonConverterV1::toJson<Timeline>(const Timeline &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
         QJsonObject object;
-        object.insert("labels", toJson<QList<Label>>(entity.labels, errors, options, path + ".labels"));
-        object.insert("tempos", toJson<QList<Tempo>>(entity.tempos, errors, options, path + ".tempos"));
-        object.insert("timeSignatures", toJson<QList<TimeSignature>>(entity.timeSignatures, errors, options, path + ".timeSignatures"));
+        TO_JSON_PROPERTY_FAIL_FAST(entity., labels, toJson, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., tempos, toJson, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., timeSignatures, toJson, object);
         return object;
     }
 
@@ -642,10 +633,10 @@ namespace QDspx{
     template <>
     QJsonValue JsonConverterV1::toJson<Track>(const Track &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
         QJsonObject object;
-        object.insert("name", entity.name);
-        object.insert("control", toJson<TrackControl>(entity.control, errors, options, path + ".control"));
-        object.insert("clips", toJson<QList<ClipRef>>(entity.clips, errors, options, path + ".clips"));
-        object.insert("workspace", toJson<Workspace>(entity.workspace, errors, options, path + ".workspace"));
+        TO_JSON_PROPERTY_FAIL_FAST(entity., name, toJsonTrivial, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., control, toJson, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., clips, toJson, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., workspace, toJson, object);
         return object;
     }
 
@@ -663,21 +654,21 @@ namespace QDspx{
 
     template <>
     QJsonValue JsonConverterV1::toJson<QList<Track>>(const QList<Track> &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
-        return toJsonArrayHelper(entity, errors, options, path);
+        return toJsonArrayHelper<Track, JsonConverterV1>(entity, errors, options, path);
     }
 
     template <>
     QList<Track> JsonConverterV1::fromJson<QList<Track>>(const QJsonValue &json, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
-        return fromJsonArrayHelper<Track>(json.toArray(), errors, options, path);
+        return fromJsonArrayHelper<Track, JsonConverterV1>(json, errors, options, path);
     }
 
     template <>
     QJsonValue JsonConverterV1::toJson<TrackControl>(const TrackControl &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
         QJsonObject object;
-        object.insert("gain", entity.gain);
-        object.insert("pan", entity.pan);
-        object.insert("mute", entity.mute);
-        object.insert("solo", entity.solo);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., gain, toJsonNumberHelperWithConstraint(0), object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., pan, toJsonNumberHelperWithConstraint(-1, 1), object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., mute, toJsonTrivial, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., solo, toJsonTrivial, object);
         return object;
     }
 
@@ -686,7 +677,7 @@ namespace QDspx{
         QJsonObject object;
         FROM_JSON_FAIL_FAST(object, json, fromJsonObjectHelperWithPropertyCheck(std::array{"gain", "pan", "mute", "solo"}), {});
         TrackControl control;
-        FROM_JSON_PROPERTY_FAIL_FAST(control., gain, fromJsonDoubleHelper, control);
+        FROM_JSON_PROPERTY_FAIL_FAST(control., gain, fromJsonDoubleHelperWithConstraint(0), control);
         FROM_JSON_PROPERTY_FAIL_FAST(control., pan, fromJsonDoubleHelperWithConstraint(-1, 1), control);
         FROM_JSON_PROPERTY_FAIL_FAST(control., mute, fromJsonBoolHelper, control);
         FROM_JSON_PROPERTY_FAIL_FAST(control., solo, fromJsonBoolHelper, control);
@@ -696,13 +687,13 @@ namespace QDspx{
     template <>
     QJsonValue JsonConverterV1::toJson<Vibrato>(const Vibrato &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
         QJsonObject object;
-        object.insert("start", entity.start);
-        object.insert("end", entity.end);
-        object.insert("amp", entity.amp);
-        object.insert("freq", entity.freq);
-        object.insert("phase", entity.phase);
-        object.insert("offset", entity.offset);
-        object.insert("points", toJson<VibratoPoints>(entity.points, errors, options, path + ".points"));
+        TO_JSON_PROPERTY_FAIL_FAST(entity., start, toJsonNumberHelperWithConstraint(0, 1), object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., end, toJsonNumberHelperWithConstraint(0, 1), object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., amp, toJsonNumberHelperWithConstraint(0), object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., freq, toJsonNumberHelperWithConstraint(0), object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., phase, toJsonNumberHelperWithConstraint(0, 1), object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., offset, toJsonTrivial, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., points, toJson, object);
         return object;
     }
 
@@ -724,8 +715,8 @@ namespace QDspx{
     template <>
     QJsonValue JsonConverterV1::toJson<VibratoPoints>(const VibratoPoints &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
         QJsonObject object;
-        object.insert("amp", toJson<QList<ControlPoint>>(entity.amp, errors, options, path + ".amp"));
-        object.insert("freq", toJson<QList<ControlPoint>>(entity.freq, errors, options, path + ".freq"));
+        TO_JSON_PROPERTY_FAIL_FAST(entity., amp, toJson, object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., freq, toJson, object);
         return object;
     }
 
@@ -741,32 +732,32 @@ namespace QDspx{
 
     template <>
     QJsonValue JsonConverterV1::toJson<QList<ControlPoint>>(const QList<ControlPoint> &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
-        return toJsonArrayHelper(entity, errors, options, path);
+        return toJsonArrayHelper<ControlPoint, JsonConverterV1>(entity, errors, options, path);
     }
 
     template <>
     QList<ControlPoint> JsonConverterV1::fromJson<QList<ControlPoint>>(const QJsonValue &json, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
-        return fromJsonArrayHelper<ControlPoint>(json.toArray(), errors, options, path);
+        return fromJsonArrayHelper<ControlPoint, JsonConverterV1>(json, errors, options, path);
     }
 
     template <>
     QJsonValue JsonConverterV1::toJson<QList<AnchorNode>>(const QList<AnchorNode> &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
-        return toJsonArrayHelper(entity, errors, options, path);
+        return toJsonArrayHelper<AnchorNode, JsonConverterV1>(entity, errors, options, path);
     }
 
     template <>
     QList<AnchorNode> JsonConverterV1::fromJson<QList<AnchorNode>>(const QJsonValue &json, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
-        return fromJsonArrayHelper<AnchorNode>(json.toArray(), errors, options, path);
+        return fromJsonArrayHelper<AnchorNode, JsonConverterV1>(json, errors, options, path);
     }
 
     template <>
     QJsonValue JsonConverterV1::toJson<QList<ClipRef>>(const QList<ClipRef> &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
-        return toJsonArrayHelper(entity, errors, options, path);
+        return toJsonArrayHelper<ClipRef, JsonConverterV1>(entity, errors, options, path);
     }
 
     template <>
     QList<ClipRef> JsonConverterV1::fromJson<QList<ClipRef>>(const QJsonValue &json, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
-        return fromJsonArrayHelper<ClipRef>(json.toArray(), errors, options, path);
+        return fromJsonArrayHelper<ClipRef, JsonConverterV1>(json, errors, options, path);
     }
 
 }

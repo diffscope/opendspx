@@ -10,12 +10,14 @@
 #include <QJsonArray>
 #include <QJsonObject>
 
+#ifndef FAIL_FAST_RETURN
 #define FAIL_FAST_RETURN(ret) \
     do { \
         if ((options & Serializer::FailFast) && errors.containsError()) { \
             return ret; \
         } \
     } while (false)
+#endif
 
 #define FROM_JSON_FAIL_FAST(val, json, parseFunc, ret) \
     do {\
@@ -79,9 +81,7 @@ namespace QDspx {
     }
 
     struct fromJsonDoubleHelperWithConstraint {
-        fromJsonDoubleHelperWithConstraint(double minimum, double maximum) : minimum(minimum), maximum(maximum) {
-        }
-        fromJsonDoubleHelperWithConstraint(double minimum) : minimum(minimum), maximum(std::numeric_limits<double>::lowest()) {
+        fromJsonDoubleHelperWithConstraint(double minimum, double maximum = std::numeric_limits<double>::lowest()) : minimum(minimum), maximum(maximum) {
         }
 
         double operator()(const QJsonValue &value, SerializationErrorList &errors, Serializer::Option options, const QString &path) const {
@@ -94,7 +94,8 @@ namespace QDspx {
             }
             auto v = value.toDouble();
             if (v < minimum || (maximum >= minimum && v > maximum)) {
-                errors.addError<RangeConstraintViolationError>(path, v, minimum, maximum);
+                auto maxVar = maximum >= minimum ? maximum : QVariant();
+                errors.addError<RangeConstraintViolationError>(path, v, minimum, maxVar);
             }
             return v;
         }
@@ -114,9 +115,7 @@ namespace QDspx {
     }
 
     struct fromJsonIntHelperWithConstraint {
-        fromJsonIntHelperWithConstraint(int minimum, int maximum) : minimum(minimum), maximum(maximum) {
-        }
-        fromJsonIntHelperWithConstraint(int minimum) : minimum(minimum), maximum(std::numeric_limits<int>::lowest()) {
+        fromJsonIntHelperWithConstraint(int minimum, int maximum = std::numeric_limits<int>::lowest()) : minimum(minimum), maximum(maximum) {
         }
 
         int operator()(const QJsonValue &value, SerializationErrorList &errors, Serializer::Option options, const QString &path) const {
@@ -129,7 +128,8 @@ namespace QDspx {
             }
             auto v = value.toInt();
             if (v < minimum || (maximum >= minimum && v > maximum)) {
-                errors.addError<RangeConstraintViolationError>(path, v, minimum, maximum);
+                auto maxVar = maximum >= minimum ? maximum : QVariant();
+                errors.addError<RangeConstraintViolationError>(path, v, minimum, maxVar);
             }
             return v;
         }
@@ -150,7 +150,7 @@ namespace QDspx {
 
     template <typename K, typename T, size_t N>
     struct fromJsonEnumHelper {
-        fromJsonEnumHelper(std::array<QPair<K, T>, N> &&enumValues) : enumValues(enumValues) {
+        fromJsonEnumHelper(const std::array<QPair<K, T>, N> &enumValues) : enumValues(enumValues) {
         }
 
         static constexpr InvalidDataTypeError::DataType Flag = std::is_same_v<K, const char *> ? InvalidDataTypeError::String : std::is_same_v<K, int> ? InvalidDataTypeError::Integer : InvalidDataTypeError::Null;
@@ -201,26 +201,7 @@ namespace QDspx {
         std::array<QPair<K, T>, N> enumValues;
     };
 
-    template <typename T>
-    QJsonArray toJsonArrayHelper(const QList<T> &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
-        QJsonArray array;
-        for (auto it = entity.begin(); it != entity.end(); ++it) {
-            auto index = std::distance(entity.begin(), it);
-            array.append(JsonConverterV1::toJson<T>(*it, errors, options, path + "[" + QString::number(index) + "]"));
-        }
-        return array;
-    }
-
-    template <>
-    QJsonArray toJsonArrayHelper(const QList<int> &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
-        QJsonArray array;
-        for (auto it = entity.begin(); it != entity.end(); ++it) {
-            array.append(*it);
-        }
-        return array;
-    }
-
-    template <typename T>
+    template <typename T, typename C>
     QList<T> fromJsonArrayHelper(const QJsonValue &json, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
         QList<T> list;
         auto array = json.toArray();
@@ -230,14 +211,14 @@ namespace QDspx {
         }
         for (auto it = array.begin(); it != array.end(); ++it) {
             auto index = std::distance(array.begin(), it);
-            auto v = JsonConverterV1::fromJson<T>(*it, errors, options, path + "[" + QString::number(index) + "]");
+            auto v = C::fromJson<T>(*it, errors, options, path + "[" + QString::number(index) + "]");
             FAIL_FAST_RETURN(list);
             list.append(v);
         }
         return list;
     }
 
-    template <>
+    template <typename C = void>
     inline QList<int> fromJsonArrayHelper(const QJsonValue &json, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
         QList<int> list;
         auto array = json.toArray();
