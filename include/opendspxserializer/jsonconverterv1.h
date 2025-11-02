@@ -48,12 +48,12 @@ namespace QDspx {
     public:
         template <typename T>
         static QJsonValue toJson(const T &entity, SerializationErrorList &errors, Serializer::Option options = {Serializer::FailFast | Serializer::CheckError}, const QString &path = {"$"}) {
-            static_assert(false);
+            static_assert(sizeof(T) == 0, "JsonConverterV1::toJson: unsupported type");
         }
 
         template <typename T>
         static T fromJson(const QJsonValue &json, SerializationErrorList &errors, Serializer::Option options = {Serializer::FailFast | Serializer::CheckError}, const QString &path = {"$"}) {
-            static_assert(false);
+            static_assert(sizeof(T) == 0, "JsonConverterV1::fromJson: unsupported type");
         }
 
     };

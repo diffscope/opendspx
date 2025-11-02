@@ -150,10 +150,12 @@ namespace QDspx {
 
     template <typename K, typename T, size_t N>
     struct fromJsonEnumHelper {
+        static_assert(std::is_same_v<K, const char *> || std::is_same_v<K, int>);
+
         fromJsonEnumHelper(const std::array<QPair<K, T>, N> &enumValues) : enumValues(enumValues) {
         }
 
-        static constexpr InvalidDataTypeError::DataType Flag = std::is_same_v<K, const char *> ? InvalidDataTypeError::String : std::is_same_v<K, int> ? InvalidDataTypeError::Integer : InvalidDataTypeError::Null;
+        static constexpr InvalidDataTypeError::DataType Flag = std::is_same_v<K, const char *> ? InvalidDataTypeError::String : InvalidDataTypeError::Integer;
 
         T operator()(const QJsonValue &value, SerializationErrorList &errors, Serializer::Option options, const QString &path) const {
             if (!(options & Serializer::CheckError)) {
@@ -176,15 +178,13 @@ namespace QDspx {
                 });
                 ok = it != enumValues.end();
                 ret = ok ? it->second : T{};
-            } else if constexpr (std::is_same_v<K, int>) {
+            } else {
                 auto s = value.toInt();
                 auto it = std::ranges::find_if(enumValues, [s](const auto &pair) {
                     return pair.first == s;
                 });
                 ok = it != enumValues.end();
                 ret = ok ? it->second : T{};
-            } else {
-                static_assert(false);
             }
 
             if (!ok) {
