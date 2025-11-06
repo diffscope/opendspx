@@ -81,7 +81,7 @@ namespace QDspx {
     }
 
     struct fromJsonDoubleHelperWithConstraint {
-        fromJsonDoubleHelperWithConstraint(double minimum, double maximum = std::numeric_limits<double>::lowest()) : minimum(minimum), maximum(maximum) {
+        fromJsonDoubleHelperWithConstraint(double minimum, double maximum = std::numeric_limits<double>::lowest()) : maximum(maximum), minimum(minimum) {
         }
 
         double operator()(const QJsonValue &value, SerializationErrorList &errors, Serializer::Option options, const QString &path) const {
@@ -115,7 +115,7 @@ namespace QDspx {
     }
 
     struct fromJsonIntHelperWithConstraint {
-        fromJsonIntHelperWithConstraint(int minimum, int maximum = std::numeric_limits<int>::lowest()) : minimum(minimum), maximum(maximum) {
+        fromJsonIntHelperWithConstraint(int minimum, int maximum = std::numeric_limits<int>::lowest()) : maximum(maximum), minimum(minimum) {
         }
 
         int operator()(const QJsonValue &value, SerializationErrorList &errors, Serializer::Option options, const QString &path) const {
@@ -211,7 +211,7 @@ namespace QDspx {
         }
         for (auto it = array.begin(); it != array.end(); ++it) {
             auto index = std::distance(array.begin(), it);
-            auto v = C::fromJson<T>(*it, errors, options, path + "[" + QString::number(index) + "]");
+            auto v = C::template fromJson<T>(*it, errors, options, path + "[" + QString::number(index) + "]");
             FAIL_FAST_RETURN(list);
             list.append(v);
         }
