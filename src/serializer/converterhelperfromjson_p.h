@@ -34,7 +34,7 @@
         FAIL_FAST_RETURN(ret); \
         auto v = parseFunc(object.value(#property), errors, options, path + "."#property); \
         FAIL_FAST_RETURN(ret); \
-        entity##property = v; \
+        entity property = v; \
     } while (false)
 
 namespace QDspx {

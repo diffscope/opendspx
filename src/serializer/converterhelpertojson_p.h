@@ -13,7 +13,7 @@
 #define TO_JSON_PROPERTY_FAIL_FAST(entity, property, parseFunc, ret) \
     do { \
         FAIL_FAST_RETURN(ret); \
-        auto v = parseFunc(entity##property, errors, options, path + "."#property); \
+        auto v = parseFunc(entity property, errors, options, path + "."#property); \
         FAIL_FAST_RETURN(ret); \
         object.insert(#property, v); \
     } while (false)
