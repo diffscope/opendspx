@@ -3,15 +3,16 @@
 #include <QJsonDocument>
 
 #include <opendspx/model.h>
+
 #include <opendspxserializer/jsonconverterv1.h>
 #include <opendspxserializer/serializationerror.h>
 
-namespace QDspx{
+namespace QDspx {
 
     QByteArray Serializer::serialize(const Model &model, SerializationErrorList &errors, Option options) {
         switch (model.version) {
-        case Model::V1:
-            return JsonConverterV1::toJson(model, errors, options).toJson(QJsonDocument::Compact);
+            case Model::V1:
+                return JsonConverterV1::toJson(model, errors, options).toJson(QJsonDocument::Compact);
             default: {
                 errors.addError<UnrecognizedVersionError>(model.version);
                 return {};
