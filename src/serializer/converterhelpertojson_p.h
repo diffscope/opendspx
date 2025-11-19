@@ -1,6 +1,12 @@
 #ifndef OPENDSPX_SERIALIZER_CONVERTERHELPERTOJSON_P_H
 #define OPENDSPX_SERIALIZER_CONVERTERHELPERTOJSON_P_H
 
+#include <QJsonArray>
+#include <QJsonValue>
+
+#include <opendspxserializer/serializer.h>
+#include <opendspxserializer/serializationerror.h>
+
 #ifndef FAIL_FAST_RETURN
 #define FAIL_FAST_RETURN(ret) \
     do { \

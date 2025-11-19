@@ -1,11 +1,11 @@
 #ifndef OPENDSPX_SERIALIZATION_CONVERTERHELPER_P_H
 #define OPENDSPX_SERIALIZATION_CONVERTERHELPER_P_H
 
+#include "serializationerror.h"
+#include "serializer.h"
 #include <algorithm>
 #include <array>
 #include <limits>
-#include <ranges>
-#include <utility>
 
 #include <QJsonArray>
 #include <QJsonObject>
@@ -40,7 +40,7 @@
 namespace QDspx {
 
     inline bool isInteger(double v) {
-        return std::isfinite(v) && std::trunc(v) == v && v >= -std::numeric_limits<int>::min() && v <= std::numeric_limits<int>::max();
+        return std::isfinite(v) && std::trunc(v) == v && v >= std::numeric_limits<int>::min() && v <= std::numeric_limits<int>::max();
     }
 
     inline InvalidDataTypeError::DataType getDataType(const QJsonValue &value) {
