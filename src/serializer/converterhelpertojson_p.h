@@ -53,7 +53,7 @@ namespace QDspx {
 
     template <typename K, typename T, size_t N>
     struct toJsonEnumHelper {
-        toJsonEnumHelper(const std::array<QPair<K, T>, N> &enumValues) : enumValues(enumValues) {
+        toJsonEnumHelper(const std::array<std::pair<K, T>, N> &enumValues) : enumValues(enumValues) {
         }
 
         QJsonValue operator()(T value, SerializationErrorList &errors, Serializer::Option options, const QString &path) const {
@@ -74,7 +74,7 @@ namespace QDspx {
             return it->first;
         }
 
-        std::array<QPair<K, T>, N> enumValues;
+        std::array<std::pair<K, T>, N> enumValues;
     };
 
     template <typename T, typename C>

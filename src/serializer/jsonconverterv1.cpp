@@ -12,9 +12,9 @@
 namespace QDspx{
 
     constexpr auto INTERP_ENUM_DEFS = std::array{
-        QPair{"none", AnchorNode::None},
-        QPair{"linear", AnchorNode::Linear},
-        QPair{"hermite", AnchorNode::Hermite}
+        std::pair{"none", AnchorNode::None},
+        std::pair{"linear", AnchorNode::Linear},
+        std::pair{"hermite", AnchorNode::Hermite}
     };
 
     template <>
@@ -570,14 +570,14 @@ namespace QDspx{
     }
 
     constexpr auto DENOMINATOR_ENUM_DEFS = std::array{
-        QPair{1, 1},
-        QPair{2, 2},
-        QPair{4, 4},
-        QPair{8, 8},
-        QPair{16, 16},
-        QPair{32, 32},
-        QPair{64, 64},
-        QPair{128, 128}
+        std::pair{1, 1},
+        std::pair{2, 2},
+        std::pair{4, 4},
+        std::pair{8, 8},
+        std::pair{16, 16},
+        std::pair{32, 32},
+        std::pair{64, 64},
+        std::pair{128, 128}
     };
 
     template <>
