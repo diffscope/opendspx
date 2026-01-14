@@ -9,6 +9,26 @@
 
 namespace QDspx {
 
+    QString Serializer::versionToText(Model::Version version) {
+        switch (version) {
+            case Model::V1:
+                return "1.0.0";
+            default:
+                return {};
+        }
+    }
+
+    Model::Version Serializer::versionFromText(const QString &text, bool *ok) {
+        if (ok)
+            *ok = true;
+        if (text == "1.0.0") {
+            return Model::V1;
+        }
+        if (ok)
+            *ok = false;
+        return {};
+    }
+
     QByteArray Serializer::serialize(const Model &model, SerializationErrorList &errors, Option options) {
         switch (model.version) {
             case Model::V1:
@@ -31,12 +51,18 @@ namespace QDspx {
             errors.addError<JsonRootIsNotObjectError>();
         }
         auto obj = doc.object();
-        auto version = obj.value("version").toString();
-        if (version == "1.0.0") {
-            return JsonConverterV1::fromJson<Model>(obj, errors, options);
+        auto versionText = obj.value("version").toString();
+        bool ok;
+        auto version = versionFromText(versionText, &ok);
+        if (!ok) {
+            errors.addError<UnrecognizedVersionError>(versionText);
+            return {};
         }
-        errors.addError<UnrecognizedVersionError>(version);
-        return {};
+        switch (version) {
+            case Model::V1:
+                return JsonConverterV1::fromJson<Model>(obj, errors, options);
+        }
+        Q_UNREACHABLE();
     }
 
 }

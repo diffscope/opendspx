@@ -3,12 +3,12 @@
 
 #include <QSharedPointer>
 
+#include <opendspx/model.h>
+
 #include <opendspxserializer/opendspxserializerglobal.h>
 #include <opendspxserializer/serializationerror.h>
 
 namespace QDspx {
-
-    struct Model;
 
     class OPENDSPX_SERIALIZER_EXPORT Serializer {
     public:
@@ -19,6 +19,9 @@ namespace QDspx {
             CheckWarning = 0x0008,
         };
         Q_DECLARE_FLAGS(Option, OptionFlag)
+
+        static QString versionToText(Model::Version version);
+        static Model::Version versionFromText(const QString &text, bool *ok = nullptr);
 
         static QByteArray serialize(const Model &model, SerializationErrorList &errors, Option options = {FailFast | CheckError});
         static Model deserialize(const QByteArray &data, SerializationErrorList &errors, Option options = {FailFast | CheckError});
