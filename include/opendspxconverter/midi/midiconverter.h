@@ -22,7 +22,7 @@ namespace QDspx {
         struct ConvertMidiToIntermediateOption {
             bool separateChannels = true;
         };
-        static MidiIntermediateData convertMidiToIntermediate(const QByteArray &midiData, Error &error, ConvertMidiToIntermediateOption option = {});
+        static MidiIntermediateData convertMidiToIntermediate(const QByteArray &midiData, Error &error, ConvertMidiToIntermediateOption option = {true});
 
         static Model convertIntermediateToDspx(const MidiIntermediateData &midiData, bool *ok = nullptr);
         static Model convertIntermediateToDspx(const MidiIntermediateData &midiData, const std::function<QString(const QByteArray &)> &decodeText, bool *ok = nullptr);
@@ -31,8 +31,8 @@ namespace QDspx {
             int resolution = 480;
             bool separateClips = false;
         };
-        static MidiIntermediateData convertDspxToIntermediate(const Model &model, ConvertDspxToIntermediateOption option = {});
-        static MidiIntermediateData convertDspxToIntermediate(const Model &model, const std::function<QByteArray(const QString &)> &encodeText, ConvertDspxToIntermediateOption option = {});
+        static MidiIntermediateData convertDspxToIntermediate(const Model &model, ConvertDspxToIntermediateOption option = {480, false});
+        static MidiIntermediateData convertDspxToIntermediate(const Model &model, const std::function<QByteArray(const QString &)> &encodeText, ConvertDspxToIntermediateOption option = {480, false});
 
         static QByteArray convertIntermediateToMidi(const MidiIntermediateData &midiData);
 

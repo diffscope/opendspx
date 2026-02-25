@@ -72,13 +72,13 @@ namespace QDspx {
         }
 
         bool isValid() const {
-            return std::ranges::all_of(std::initializer_list{
+            return std::ranges::all_of(std::initializer_list<bool>{
                 m_resolution >= 0,
                 std::ranges::all_of(m_tempos, [](const Tempo &tempo) {
                     return tempo.tick >= 0 && tempo.tempo >= 10 && tempo.tempo <= 1000;
                 }),
                 std::ranges::all_of(m_timeSignatures, [](const TimeSignature &timeSignature) {
-                    return timeSignature.tick >= 0 && timeSignature.numerator >= 1 && std::ranges::any_of(std::initializer_list{1, 2, 4, 8, 16, 32, 64, 128}, [timeSignature](int v) { return v == timeSignature.denominator; });
+                    return timeSignature.tick >= 0 && timeSignature.numerator >= 1 && std::ranges::any_of(std::initializer_list<int>{1, 2, 4, 8, 16, 32, 64, 128}, [timeSignature](int v) { return v == timeSignature.denominator; });
                 }),
                 std::ranges::all_of(m_markers, [](const Marker &marker) {
                     return marker.tick >= 0;
