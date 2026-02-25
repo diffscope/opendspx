@@ -157,18 +157,8 @@ if (OPENDSPX_BUILD_SERIALIZER)
 endif()
 
 if (OPENDSPX_BUILD_CONVERTER)
-    find_package(QNrbf REQUIRED)
-    find_package(stdutau REQUIRED)
     find_package(wolf-midi CONFIG REQUIRED)
-
     _opendspx_add_library(converter)
-
-    if (QT_VERSION_MAJOR GREATER_EQUAL 6)
-        find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core5Compat REQUIRED)
-        target_link_libraries(${OPENDSPX_CONVERTER_TARGET} PUBLIC Qt${QT_VERSION_MAJOR}::Core5Compat)
-    endif ()
-    target_link_libraries(${OPENDSPX_CONVERTER_TARGET} PRIVATE QNrbfFormat)
-    target_link_libraries(${OPENDSPX_CONVERTER_TARGET} PRIVATE stdutau::stdutau)
     target_link_libraries(${OPENDSPX_CONVERTER_TARGET} PRIVATE wolf-midi::wolf-midi)
 endif()
 
