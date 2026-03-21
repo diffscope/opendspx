@@ -1,0 +1,15 @@
+#ifndef OPENDSPX_MODEL_TRACKCONTROL_H
+#define OPENDSPX_MODEL_TRACKCONTROL_H
+
+namespace QDspx {
+
+    struct TrackControl {
+        double gain{1.0};
+        double pan{0.0};
+        bool mute{false};
+        bool solo{false};
+    };
+
+}
+
+#endif //OPENDSPX_MODEL_TRACKCONTROL_H

@@ -1,46 +1,369 @@
-#include <iostream>
+#include <opendspx/model.h>
+#include <opendspxserializer/serializer.h>
 
-#include <QTextCodec>
-#include <opendspx/qdspxbase.h>
-#include <opendspx/converters/midi.h>
+using namespace QDspx;
 
-
-static bool trackSelector(const QList<QDspx::MidiConverter::TrackInfo>& trackInfoList,
-                          const QList<QByteArray>& labelList, QList<int>* selectIDs, QTextCodec** codec) {
-    *codec = QTextCodec::codecForName("UTF-8");
-
-    selectIDs->clear();
-    for (int i = 0; i < trackInfoList.size(); ++i)
-        selectIDs->append(i);
-    return true;
-}
-
-int main(int argc, char* argv[]) {
-    if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <midi_file_path>" << std::endl;
-        return 1;
+const auto data = R"(
+{
+    "version": "1.0.0",
+    "content": {
+        "global": {
+            "name": "My First Song",
+            "author": "CrSjimo",
+            "centShift": 0,
+            "editorId": "dspx-editor",
+            "editorName": "DiffScope Editor"
+        },
+        "master": {
+            "control": {
+                "gain": 0.8,
+                "mute": false,
+                "pan": 0.0
+            }
+        },
+        "timeline": {
+            "timeSignatures": [
+                {
+                    "index": 0,
+                    "numerator": 4,
+                    "denominator": 4
+                }
+            ],
+            "tempos": [
+                {
+                    "pos": 0,
+                    "value": 120.0
+                }
+            ],
+            "labels": [
+                {
+                    "pos": 0,
+                    "text": "Intro"
+                },
+                {
+                    "pos": 7680,
+                    "text": "Verse 1"
+                }
+            ]
+        },
+        "tracks": [
+            {
+                "name": "Vocal Track",
+                "control": {
+                    "gain": 0.75,
+                    "mute": false,
+                    "pan": 0.0,
+                    "solo": false
+                },
+                "clips": [
+                    {
+                        "type": "singing",
+                        "name": "Verse 1 Vocal",
+                        "time": {
+                            "start": 0,
+                            "length": 7680,
+                            "clipStart": 0,
+                            "clipLen": 7680
+                        },
+                        "control": {
+                            "gain": 1.0,
+                            "mute": false,
+                            "pan": 0.0
+                        },
+                        "notes": [
+                            {
+                                "pos": 0,
+                                "length": 1920,
+                                "keyNum": 60,
+                                "lyric": "Hello",
+                                "language": "eng",
+                                "centShift": 0,
+                                "pronunciation": {
+                                    "original": "h ə l oʊ",
+                                    "edited": "h ə l oʊ"
+                                },
+                                "phonemes": {
+                                    "original": [
+                                        {
+                                            "token": "h",
+                                            "start": 0,
+                                            "language": "eng",
+                                            "onset": true
+                                        },
+                                        {
+                                            "token": "ə",
+                                            "start": 200,
+                                            "language": "eng",
+                                            "onset": false
+                                        },
+                                        {
+                                            "token": "l",
+                                            "start": 400,
+                                            "language": "eng",
+                                            "onset": false
+                                        },
+                                        {
+                                            "token": "oʊ",
+                                            "start": 600,
+                                            "language": "eng",
+                                            "onset": false
+                                        }
+                                    ],
+                                    "edited": [
+                                        {
+                                            "token": "h",
+                                            "start": 0,
+                                            "language": "eng",
+                                            "onset": true
+                                        },
+                                        {
+                                            "token": "ə",
+                                            "start": 200,
+                                            "language": "eng",
+                                            "onset": false
+                                        },
+                                        {
+                                            "token": "l",
+                                            "start": 400,
+                                            "language": "eng",
+                                            "onset": false
+                                        },
+                                        {
+                                            "token": "oʊ",
+                                            "start": 600,
+                                            "language": "eng",
+                                            "onset": false
+                                        }
+                                    ]
+                                },
+                                "vibrato": {
+                                    "start": 0.8,
+                                    "end": 1.0,
+                                    "freq": 5.5,
+                                    "amp": 50,
+                                    "offset": 0,
+                                    "phase": 0.0,
+                                    "points": {
+                                        "freq": [
+                                            {
+                                                "x": 0.8,
+                                                "y": 0.0
+                                            },
+                                            {
+                                                "x": 1.0,
+                                                "y": 1.0
+                                            }
+                                        ],
+                                        "amp": [
+                                            {
+                                                "x": 0.8,
+                                                "y": 0.0
+                                            },
+                                            {
+                                                "x": 1.0,
+                                                "y": 1.0
+                                            }
+                                        ]
+                                    }
+                                },
+                                "workspace": {}
+                            },
+                            {
+                                "pos": 1920,
+                                "length": 1920,
+                                "keyNum": 62,
+                                "lyric": "world",
+                                "language": "eng",
+                                "centShift": 5,
+                                "pronunciation": {
+                                    "original": "w ɜr l d",
+                                    "edited": "w ɜr l d"
+                                },
+                                "phonemes": {
+                                    "original": [
+                                        {
+                                            "token": "w",
+                                            "start": 0,
+                                            "language": "eng",
+                                            "onset": true
+                                        },
+                                        {
+                                            "token": "ɜr",
+                                            "start": 150,
+                                            "language": "eng",
+                                            "onset": false
+                                        },
+                                        {
+                                            "token": "l",
+                                            "start": 500,
+                                            "language": "eng",
+                                            "onset": false
+                                        },
+                                        {
+                                            "token": "d",
+                                            "start": 700,
+                                            "language": "eng",
+                                            "onset": false
+                                        }
+                                    ],
+                                    "edited": [
+                                        {
+                                            "token": "w",
+                                            "start": 0,
+                                            "language": "eng",
+                                            "onset": true
+                                        },
+                                        {
+                                            "token": "ɜr",
+                                            "start": 150,
+                                            "language": "eng",
+                                            "onset": false
+                                        },
+                                        {
+                                            "token": "l",
+                                            "start": 500,
+                                            "language": "eng",
+                                            "onset": false
+                                        },
+                                        {
+                                            "token": "d",
+                                            "start": 700,
+                                            "language": "eng",
+                                            "onset": false
+                                        }
+                                    ]
+                                },
+                                "vibrato": {
+                                    "start": 0.7,
+                                    "end": 1.0,
+                                    "freq": 6.0,
+                                    "amp": 75,
+                                    "offset": 0,
+                                    "phase": 0.25,
+                                    "points": {
+                                        "freq": [
+                                            {
+                                                "x": 0.7,
+                                                "y": 0.0
+                                            },
+                                            {
+                                                "x": 1.0,
+                                                "y": 1.0
+                                            }
+                                        ],
+                                        "amp": [
+                                            {
+                                                "x": 0.7,
+                                                "y": 0.0
+                                            },
+                                            {
+                                                "x": 1.0,
+                                                "y": 1.0
+                                            }
+                                        ]
+                                    }
+                                },
+                                "workspace": {}
+                            }
+                        ],
+                        "params": {
+                            "pitch": {
+                                "original": [
+                                    {
+                                        "type": "free",
+                                        "start": 0,
+                                        "step": 5,
+                                        "values": [
+                                            6000, 6000, 6000, 6200, 6200, 6200
+                                        ]
+                                    }
+                                ],
+                                "edited": [
+                                    {
+                                        "type": "anchor",
+                                        "start": 0,
+                                        "nodes": [
+                                            {
+                                                "x": 0,
+                                                "y": 6000,
+                                                "interp": "linear"
+                                            },
+                                            {
+                                                "x": 1920,
+                                                "y": 6000,
+                                                "interp": "hermite"
+                                            },
+                                            {
+                                                "x": 3840,
+                                                "y": 6200,
+                                                "interp": "linear"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "transform": []
+                            }
+                        },
+                        "sources": {
+                            "singer": {
+                                "name": "Default Singer",
+                                "version": "1.0"
+                            }
+                        },
+                        "workspace": {}
+                    }
+                ],
+                "workspace": {}
+            },
+            {
+                "name": "Instrumental Track",
+                "control": {
+                    "gain": 0.6,
+                    "mute": false,
+                    "pan": 0.0,
+                    "solo": false
+                },
+                "clips": [
+                    {
+                        "type": "audio",
+                        "name": "Background Music",
+                        "path": "assets/background.wav",
+                        "time": {
+                            "start": 0,
+                            "length": 15360,
+                            "clipStart": 0,
+                            "clipLen": 15360
+                        },
+                        "control": {
+                            "gain": 0.8,
+                            "mute": false,
+                            "pan": -0.2
+                        },
+                        "workspace": {}
+                    }
+                ],
+                "workspace": {}
+            }
+        ],
+        "workspace": {
+            "projectSettings": {
+                "sampleRate": 44100,
+                "bufferSize": 512
+            },
+            "uiState": {
+                "zoom": 1.0,
+                "scrollPosition": 0
+            }
+        }
     }
+}
+)";
 
-    const char* midiFilePath = argv[1];
-    std::cout << "MIDI File Path: " << midiFilePath << std::endl;
-
-    const auto dspx = new QDspx::Model;
-    std::function<bool(const QList<QDspx::MidiConverter::TrackInfo>&, const QList<QByteArray>&,
-                       QList<int>*, QTextCodec**)>
-        midiSelector = trackSelector;
-    QVariantMap args = {};
-    args.insert(QStringLiteral("selector"),
-                QVariant::fromValue(reinterpret_cast<quintptr>(&midiSelector)));
-
-    const auto midi = new QDspx::MidiConverter();
-    const auto returnCode = midi->load(QString::fromLocal8Bit(midiFilePath), dspx, args);
-
-    std::cout << "returnCode: " << returnCode.code << " type: " << returnCode.type << std::endl;
-
-    std::cout << "timeSignatures: " << dspx->content.timeline.timeSignatures[0].num << "/" << dspx->content.timeline.
-        timeSignatures[0].den << std::endl;
-
-    std::cout << "tempo: " << dspx->content.timeline.tempos[0].value << std::endl;
-
+int main() {
+    SerializationErrorList errors;
+    auto model = Serializer::deserialize(data, errors);
+    qDebug() << errors.size();
+    auto data1 = Serializer::serialize(model, errors);
+    qDebug().noquote() << QJsonDocument::fromJson(data1).toJson(QJsonDocument::Indented);
     return 0;
 }
