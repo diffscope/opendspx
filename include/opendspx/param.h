@@ -7,7 +7,7 @@
 #include <opendspx/paramcurveanchor.h>
 #include <opendspx/paramcurvefree.h>
 
-namespace QDspx {
+namespace opendspx {
 
     struct Param {
         QList<ParamCurveRef> original;

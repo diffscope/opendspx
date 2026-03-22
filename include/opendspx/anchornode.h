@@ -1,7 +1,7 @@
 #ifndef OPENDSPX_MODEL_ANCHORNODE_H
 #define OPENDSPX_MODEL_ANCHORNODE_H
 
-namespace QDspx {
+namespace opendspx {
 
     struct AnchorNode {
         enum Interpolation {

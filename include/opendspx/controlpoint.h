@@ -1,7 +1,7 @@
 #ifndef OPENDSPX_MODEL_CONTROLPOINT_H
 #define OPENDSPX_MODEL_CONTROLPOINT_H
 
-namespace QDspx {
+namespace opendspx {
 
     struct ControlPoint {
         double x{0.0};

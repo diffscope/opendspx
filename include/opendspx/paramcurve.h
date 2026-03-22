@@ -3,7 +3,7 @@
 
 #include <QSharedPointer>
 
-namespace QDspx {
+namespace opendspx {
 
     struct ParamCurve {
         enum Type {

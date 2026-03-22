@@ -9,7 +9,7 @@
 #include "converterhelperfromjson_p.h"
 #include "converterhelpertojson_p.h"
 
-namespace QDspx{
+namespace opendspx{
 
     constexpr auto INTERP_ENUM_DEFS = std::array{
         std::pair{"none", AnchorNode::None},

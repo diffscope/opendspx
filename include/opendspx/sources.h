@@ -5,7 +5,7 @@
 #include <QJsonObject>
 #include <QString>
 
-namespace QDspx {
+namespace opendspx {
 
     using Sources = QMap<QString, QJsonObject>;
 

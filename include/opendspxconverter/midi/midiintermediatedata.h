@@ -6,7 +6,7 @@
 #include <QByteArray>
 #include <QList>
 
-namespace QDspx {
+namespace opendspx {
 
     class MidiIntermediateData {
     public:

@@ -7,7 +7,7 @@
 #include <opendspx/tempo.h>
 #include <opendspx/timesignature.h>
 
-namespace QDspx {
+namespace opendspx {
 
     struct Timeline {
         QList<Label> labels;

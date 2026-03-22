@@ -8,7 +8,7 @@
 #include <opendspx/params.h>
 #include <opendspx/sources.h>
 
-namespace QDspx {
+namespace opendspx {
 
     struct SingingClip : Clip {
         SingingClip(const QString &name = {}, const BusControl &control = {}, const ClipTime &time = {}, const Workspace &workspace = {}, const QList<Note> &notes = {}, const Params &params = {}, const Sources &sources = {})

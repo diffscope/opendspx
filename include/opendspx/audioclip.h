@@ -3,7 +3,7 @@
 
 #include <opendspx/clip.h>
 
-namespace QDspx {
+namespace opendspx {
 
     struct AudioClip : Clip {
         AudioClip(const QString &name = {}, const BusControl &control = {}, const ClipTime &time = {}, const Workspace &workspace = {}, const QString &path = {})

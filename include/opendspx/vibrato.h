@@ -3,7 +3,7 @@
 
 #include <opendspx/vibratopoints.h>
 
-namespace QDspx {
+namespace opendspx {
 
     struct Vibrato {
         double start{0.0};

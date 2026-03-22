@@ -8,7 +8,7 @@
 #include <opendspxserializer/opendspxserializerglobal.h>
 #include <opendspxserializer/serializationerror.h>
 
-namespace QDspx {
+namespace opendspx {
 
     class OPENDSPX_SERIALIZER_EXPORT Serializer {
     public:

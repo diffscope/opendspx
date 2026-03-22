@@ -10,7 +10,7 @@
 #include <opendspx/trackcontrol.h>
 #include <opendspx/workspace.h>
 
-namespace QDspx {
+namespace opendspx {
 
     struct Track {
         QString name;

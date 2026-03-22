@@ -6,7 +6,7 @@
 #include <opendspx/paramcurve.h>
 #include <opendspx/anchornode.h>
 
-namespace QDspx {
+namespace opendspx {
 
     struct ParamCurveAnchor : ParamCurve {
         ParamCurveAnchor(int start = 0, const QList<AnchorNode> &nodes = {})

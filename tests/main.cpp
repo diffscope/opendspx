@@ -1,7 +1,7 @@
 #include <opendspx/model.h>
 #include <opendspxserializer/serializer.h>
 
-using namespace QDspx;
+using namespace opendspx;
 
 const auto data = R"(
 {

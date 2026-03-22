@@ -24,7 +24,7 @@
         object.insert(#property, v); \
     } while (false)
 
-namespace QDspx {
+namespace opendspx {
 
     template <typename T>
     QJsonValue toJsonTrivial(T v, SerializationErrorList &, Serializer::Option, const QString &) {

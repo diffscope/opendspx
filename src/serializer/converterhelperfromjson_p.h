@@ -37,7 +37,7 @@
         entity property = v; \
     } while (false)
 
-namespace QDspx {
+namespace opendspx {
 
     inline bool isInteger(double v) {
         return std::isfinite(v) && std::trunc(v) == v && v >= std::numeric_limits<int>::min() && v <= std::numeric_limits<int>::max();

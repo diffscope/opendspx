@@ -1,7 +1,7 @@
 #ifndef OPENDSPX_MODEL_TRACKCONTROL_H
 #define OPENDSPX_MODEL_TRACKCONTROL_H
 
-namespace QDspx {
+namespace opendspx {
 
     struct TrackControl {
         double gain{1.0};

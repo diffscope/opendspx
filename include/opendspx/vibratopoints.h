@@ -5,7 +5,7 @@
 
 #include <opendspx/controlpoint.h>
 
-namespace QDspx {
+namespace opendspx {
 
     struct VibratoPoints {
         QList<ControlPoint> amp;

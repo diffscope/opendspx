@@ -8,7 +8,7 @@
 #include <opendspx/cliptime.h>
 #include <opendspx/workspace.h>
 
-namespace QDspx {
+namespace opendspx {
 
     struct Clip {
         enum Type {

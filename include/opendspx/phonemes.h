@@ -5,7 +5,7 @@
 
 #include <opendspx/phoneme.h>
 
-namespace QDspx {
+namespace opendspx {
 
     struct Phonemes {
         QList<Phoneme> original;

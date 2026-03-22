@@ -14,7 +14,7 @@
 #include <opendspx/model.h>
 #include <opendspxconverter/midi/midiintermediatedata.h>
 
-namespace QDspx {
+namespace opendspx {
 
     constexpr int kDspxTicksPerQuarter = 480;
 

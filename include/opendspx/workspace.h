@@ -4,7 +4,7 @@
 #include <QMap>
 #include <QJsonObject>
 
-namespace QDspx{
+namespace opendspx{
 
     using Workspace = QMap<QString, QJsonObject>;
 

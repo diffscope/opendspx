@@ -9,7 +9,7 @@
 #include <opendspx/track.h>
 #include <opendspx/workspace.h>
 
-namespace QDspx{
+namespace opendspx{
 
     struct Content {
         Global global;

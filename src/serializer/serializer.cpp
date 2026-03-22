@@ -7,7 +7,7 @@
 #include <opendspxserializer/jsonconverterv1.h>
 #include <opendspxserializer/serializationerror.h>
 
-namespace QDspx {
+namespace opendspx {
 
     QString Serializer::versionToText(Model::Version version) {
         switch (version) {

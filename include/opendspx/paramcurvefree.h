@@ -5,7 +5,7 @@
 
 #include <opendspx/paramcurve.h>
 
-namespace QDspx {
+namespace opendspx {
 
     struct ParamCurveFree : ParamCurve {
         ParamCurveFree(int start = 0, int step = 5, const QList<int> &values = {})

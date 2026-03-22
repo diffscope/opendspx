@@ -5,7 +5,7 @@
 
 #include <opendspxconverter/opendspxconverterglobal.h>
 
-namespace QDspx {
+namespace opendspx {
 
     struct Model;
     class MidiIntermediateData;

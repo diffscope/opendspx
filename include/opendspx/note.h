@@ -8,7 +8,7 @@
 #include <opendspx/vibrato.h>
 #include <opendspx/workspace.h>
 
-namespace QDspx {
+namespace opendspx {
 
     struct Note {
         int pos{0};

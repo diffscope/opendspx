@@ -3,7 +3,7 @@
 
 #include <opendspx/content.h>
 
-namespace QDspx {
+namespace opendspx {
 
     struct Model {
         enum Version {

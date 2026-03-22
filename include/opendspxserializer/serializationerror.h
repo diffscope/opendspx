@@ -7,7 +7,7 @@
 #include <QString>
 #include <QVariant>
 
-namespace QDspx {
+namespace opendspx {
 
     class SerializationError {
     public:

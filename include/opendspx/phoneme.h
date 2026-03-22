@@ -3,7 +3,7 @@
 
 #include <QString>
 
-namespace QDspx {
+namespace opendspx {
 
     struct Phoneme {
         QString language;

@@ -5,7 +5,7 @@
 
 #include <opendspxserializer/serializer.h>
 
-namespace QDspx {
+namespace opendspx {
 
     struct AnchorNode;
     struct AudioClip;

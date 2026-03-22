@@ -1,7 +1,7 @@
 #ifndef OPENDSPX_MODEL_CLIPTIME_H
 #define OPENDSPX_MODEL_CLIPTIME_H
 
-namespace QDspx {
+namespace opendspx {
 
     struct ClipTime {
         int start{0};

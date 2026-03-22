@@ -6,7 +6,7 @@
 
 #include <opendspx/param.h>
 
-namespace QDspx {
+namespace opendspx {
 
     using Params = QMap<QString, Param>;
 
