@@ -65,6 +65,8 @@ string(TIMESTAMP CURRENT_YEAR "%Y")
 
 find_package(QT NAMES Qt6 COMPONENTS Core REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
+find_package(stdcorelib CONFIG REQUIRED)
 if (WIN32)
     include(cmake/winrc.cmake)
 endif()
@@ -84,6 +86,7 @@ if (TRUE)
 
     # Link libraries
     target_link_libraries(${OPENDSPX_MODEL_TARGET} INTERFACE Qt${QT_VERSION_MAJOR}::Core)
+    target_link_libraries(${OPENDSPX_MODEL_TARGET} INTERFACE nlohmann_json::nlohmann_json)
 
     if (OPENDSPX_INSTALL)
         target_include_directories(${OPENDSPX_MODEL_TARGET} INTERFACE
@@ -128,6 +131,7 @@ macro(_opendspx_add_library identifier)
 
     target_link_libraries(${OPENDSPX_${IDENTIFIER}_TARGET} PUBLIC Qt${QT_VERSION_MAJOR}::Core)
     target_link_libraries(${OPENDSPX_${IDENTIFIER}_TARGET} PUBLIC ${OPENDSPX_MODEL_TARGET})
+    target_link_libraries(${OPENDSPX_${IDENTIFIER}_TARGET} PRIVATE stdcorelib::stdcorelib)
 
     # Add platform specific
     if (WIN32)

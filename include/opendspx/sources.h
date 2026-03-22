@@ -1,13 +1,17 @@
 #ifndef OPENDSPX_MODEL_SOURCES_H
 #define OPENDSPX_MODEL_SOURCES_H
 
-#include <QMap>
-#include <QJsonObject>
-#include <QString>
+#include <map>
+#include <string>
+
+#include <nlohmann/json.hpp>
 
 namespace opendspx {
 
-    using Sources = QMap<QString, QJsonObject>;
+    class Sources : public std::map<std::string, nlohmann::json> {
+    public:
+        using std::map<std::string, nlohmann::json>::map;
+    };
 
 }
 

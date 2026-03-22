@@ -1,7 +1,7 @@
 #ifndef OPENDSPX_MODEL_PARAM_H
 #define OPENDSPX_MODEL_PARAM_H
 
-#include <QList>
+#include <vector>
 
 #include <opendspx/paramcurve.h>
 #include <opendspx/paramcurveanchor.h>
@@ -10,9 +10,9 @@
 namespace opendspx {
 
     struct Param {
-        QList<ParamCurveRef> original;
-        QList<ParamCurveRef> transform;
-        QList<ParamCurveRef> edited;
+        std::vector<ParamCurveRef> original;
+        std::vector<ParamCurveRef> transform;
+        std::vector<ParamCurveRef> edited;
     };
 
 }

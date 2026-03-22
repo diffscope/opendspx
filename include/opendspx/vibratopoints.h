@@ -1,15 +1,15 @@
 #ifndef OPENDSPX_MODEL_VIBRATOPOINTS_H
 #define OPENDSPX_MODEL_VIBRATOPOINTS_H
 
-#include <QList>
+#include <vector>
 
 #include <opendspx/controlpoint.h>
 
 namespace opendspx {
 
     struct VibratoPoints {
-        QList<ControlPoint> amp;
-        QList<ControlPoint> freq;
+        std::vector<ControlPoint> amp;
+        std::vector<ControlPoint> freq;
     };
 
 }

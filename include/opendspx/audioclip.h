@@ -3,16 +3,18 @@
 
 #include <opendspx/clip.h>
 
+#include <utility>
+
 namespace opendspx {
 
     struct AudioClip : Clip {
-        AudioClip(const QString &name = {}, const BusControl &control = {}, const ClipTime &time = {}, const Workspace &workspace = {}, const QString &path = {})
-            : Clip(Audio, name, control, time, workspace), path(path) {
+        AudioClip(std::string name = {}, const BusControl &control = {}, const ClipTime &time = {}, Workspace workspace = {}, std::string path = {})
+            : Clip(Type::Audio, std::move(name), control, time, std::move(workspace)), path(std::move(path)) {
         }
 
-        QString path;
+        std::string path;
     };
-    using AudioClipRef = QSharedPointer<AudioClip>;
+    using AudioClipRef = std::shared_ptr<AudioClip>;
 
 }
 

@@ -1,7 +1,9 @@
 #ifndef OPENDSPX_SERIALIZER_SERIALIZER_H
 #define OPENDSPX_SERIALIZER_SERIALIZER_H
 
-#include <QSharedPointer>
+#include <QFlags>
+
+#include <iosfwd>
 
 #include <opendspx/model.h>
 
@@ -20,11 +22,11 @@ namespace opendspx {
         };
         Q_DECLARE_FLAGS(Option, OptionFlag)
 
-        static QString versionToText(Model::Version version);
-        static Model::Version versionFromText(const QString &text, bool *ok = nullptr);
+        static std::string versionToText(Model::Version version);
+        static Model::Version versionFromText(const std::string &text, bool *ok = nullptr);
 
-        static QByteArray serialize(const Model &model, SerializationErrorList &errors, Option options = {FailFast | CheckError});
-        static Model deserialize(const QByteArray &data, SerializationErrorList &errors, Option options = {FailFast | CheckError});
+        static void serialize(std::ostream &out, const Model &model, SerializationErrorList &errors, Option options = {FailFast | CheckError}, bool compress = false);
+        static Model deserialize(std::istream &in, SerializationErrorList &errors, Option options = {FailFast | CheckError});
     };
 
     Q_DECLARE_OPERATORS_FOR_FLAGS(Serializer::Option)

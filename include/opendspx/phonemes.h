@@ -1,15 +1,15 @@
 #ifndef OPENDSPX_MODEL_PHONEMES_H
 #define OPENDSPX_MODEL_PHONEMES_H
 
-#include <QList>
+#include <vector>
 
 #include <opendspx/phoneme.h>
 
 namespace opendspx {
 
     struct Phonemes {
-        QList<Phoneme> original;
-        QList<Phoneme> edited;
+        std::vector<Phoneme> original;
+        std::vector<Phoneme> edited;
     };
 
 }

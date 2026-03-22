@@ -4,12 +4,12 @@
 namespace opendspx {
 
     struct AnchorNode {
-        enum Interpolation {
+        enum class Interpolation {
             None,
             Linear,
             Hermite,
         };
-        Interpolation interp{None};
+        Interpolation interp{Interpolation::None};
         int x{0};
         int y{0};
     };

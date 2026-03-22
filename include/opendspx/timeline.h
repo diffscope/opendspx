@@ -1,7 +1,7 @@
 #ifndef OPENDSPX_MODEL_TIMELINE_H
 #define OPENDSPX_MODEL_TIMELINE_H
 
-#include <QList>
+#include <vector>
 
 #include <opendspx/label.h>
 #include <opendspx/tempo.h>
@@ -10,9 +10,9 @@
 namespace opendspx {
 
     struct Timeline {
-        QList<Label> labels;
-        QList<Tempo> tempos;
-        QList<TimeSignature> timeSignatures;
+        std::vector<Label> labels;
+        std::vector<Tempo> tempos;
+        std::vector<TimeSignature> timeSignatures;
     };
 
 }

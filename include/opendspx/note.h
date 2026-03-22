@@ -1,7 +1,7 @@
 #ifndef OPENDSPX_MODEL_NOTE_H
 #define OPENDSPX_MODEL_NOTE_H
 
-#include <QString>
+#include <string>
 
 #include <opendspx/phonemes.h>
 #include <opendspx/pronunciation.h>
@@ -15,8 +15,8 @@ namespace opendspx {
         int length{0};
         int keyNum{0};
         int centShift{0};
-        QString language;
-        QString lyric;
+        std::string language;
+        std::string lyric;
         Pronunciation pronunciation;
         Phonemes phonemes;
         Vibrato vibrato;

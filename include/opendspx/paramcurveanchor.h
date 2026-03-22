@@ -1,7 +1,8 @@
 #ifndef OPENDSPX_MODEL_PARAMCURVEANCHOR_H
 #define OPENDSPX_MODEL_PARAMCURVEANCHOR_H
 
-#include <QList>
+#include <vector>
+#include <utility>
 
 #include <opendspx/paramcurve.h>
 #include <opendspx/anchornode.h>
@@ -9,14 +10,14 @@
 namespace opendspx {
 
     struct ParamCurveAnchor : ParamCurve {
-        ParamCurveAnchor(int start = 0, const QList<AnchorNode> &nodes = {})
-            : ParamCurve(Anchor, start), nodes(nodes) {
+        ParamCurveAnchor(int start = 0, std::vector<AnchorNode> nodes = {})
+            : ParamCurve(Anchor, start), nodes(std::move(nodes)) {
         }
 
-        QList<AnchorNode> nodes;
+        std::vector<AnchorNode> nodes;
     };
     
-    using ParamCurveAnchorRef = QSharedPointer<ParamCurveAnchor>;
+    using ParamCurveAnchorRef = std::shared_ptr<ParamCurveAnchor>;
 
 }
 

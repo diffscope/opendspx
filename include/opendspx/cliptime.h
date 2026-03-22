@@ -4,7 +4,7 @@
 namespace opendspx {
 
     struct ClipTime {
-        int start{0};
+        int pos{0};
         int length{0};
         int clipStart{0};
         int clipLen{0};
