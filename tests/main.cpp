@@ -368,7 +368,9 @@ int main() {
     auto model = Serializer::deserialize(in, errors);
     std::cerr << errors.size() << std::endl;
     std::stringstream out;
-    Serializer::serialize(out, model, errors);
-    std::cout << out.str() << std::endl;
+    Serializer::serialize(out, model, errors, Serializer::FailFast | Serializer::CheckError, true);
+    for (auto ch : out.str()) {
+        std::cout << std::setbase(16) << std::setfill('0') << std::setw(2) << static_cast<int>(static_cast<std::uint8_t>(ch)) << " ";
+    }
     return 0;
 }

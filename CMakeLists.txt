@@ -65,6 +65,10 @@ string(TIMESTAMP CURRENT_YEAR "%Y")
 
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(stdcorelib CONFIG REQUIRED)
+if(OPENDSPX_BUILD_SERIALIZER)
+    find_package(zstd CONFIG REQUIRED)
+endif()
+
 if (WIN32)
     include(cmake/winrc.cmake)
 endif()
@@ -154,6 +158,7 @@ endmacro()
 
 if (OPENDSPX_BUILD_SERIALIZER)
     _opendspx_add_library(serializer)
+    target_link_libraries(${OPENDSPX_SERIALIZER_TARGET} PRIVATE zstd::libzstd)
 endif()
 
 if (OPENDSPX_BUILD_CONVERTER)

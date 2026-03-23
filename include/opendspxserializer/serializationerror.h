@@ -14,6 +14,7 @@ namespace opendspx {
             JsonParseFailure = 0x0001,
             JsonRootIsNotObject = 0x0002,
             UnrecognizedVersion = 0x0003,
+            CompressionFailure = 0x0041,
             InvalidDataType = 0x1001,
             InvalidObjectType = 0x1002,
             RangeConstraintViolation = 0x1101,
@@ -94,6 +95,20 @@ namespace opendspx {
     private:
         std::string m_actualVersion;
         int m_actualVersionFlag;
+    };
+
+    class CompressionFailureError : public SerializationError {
+    public:
+        explicit CompressionFailureError(std::string message)
+            : SerializationError(CompressionFailure), m_message(std::move(message)) {
+        }
+
+        std::string message() const {
+            return m_message;
+        }
+
+    private:
+        std::string m_message;
     };
 
     class InvalidDataTypeError : public SerializationError {
