@@ -467,7 +467,7 @@ namespace opendspx {
             midiFile.createTempoEvent(metaTrack, tempo.tick, static_cast<float>(tempo.tempo));
         }
         for (const auto &sig : midiData.timeSignatures()) {
-            midiFile.createTimeSignatureEvent(metaTrack, sig.tick, sig.numerator, static_cast<int>(std::log2(sig.denominator)));
+            midiFile.createTimeSignatureEvent(metaTrack, sig.tick, sig.numerator, sig.denominator);
         }
         for (const auto &marker : midiData.markers()) {
             midiFile.createMarkerEvent(metaTrack, marker.tick, std::vector<char>(marker.text.begin(), marker.text.end()));
