@@ -2,9 +2,8 @@
 #define OPENDSPX_CONVERTER_MIDIINTERMEDIATEDATA_H
 
 #include <algorithm>
-
-#include <QByteArray>
-#include <QList>
+#include <string>
+#include <vector>
 
 namespace opendspx {
 
@@ -24,26 +23,26 @@ namespace opendspx {
 
         struct Marker {
             int tick;
-            QByteArray text;
+            std::string text;
         };
 
         struct Note {
             int noteOnTick;
             int length;
             int key;
-            QByteArray lyric;
+            std::string lyric;
         };
 
         struct Track {
-            QByteArray title;
-            QList<Note> notes;
+            std::string title;
+            std::vector<Note> notes;
             int channelIndex;
             int endTick;
         };
 
         MidiIntermediateData() = default;
 
-        MidiIntermediateData(int resolution, QList<Tempo> tempos, QList<TimeSignature> timeSignatures, QList<Marker> markers, QList<Track> tracks)
+        MidiIntermediateData(int resolution, std::vector<Tempo> tempos, std::vector<TimeSignature> timeSignatures, std::vector<Marker> markers, std::vector<Track> tracks)
             : m_resolution(resolution),
               m_tempos(std::move(tempos)),
               m_timeSignatures(std::move(timeSignatures)),
@@ -55,19 +54,19 @@ namespace opendspx {
             return m_resolution;
         }
 
-        QList<Tempo> tempos() const {
+        std::vector<Tempo> tempos() const {
             return m_tempos;
         }
 
-        QList<TimeSignature> timeSignatures() const {
+        std::vector<TimeSignature> timeSignatures() const {
             return m_timeSignatures;
         }
 
-        QList<Marker> markers() const {
+        std::vector<Marker> markers() const {
             return m_markers;
         }
 
-        QList<Track> tracks() const {
+        std::vector<Track> tracks() const {
             return m_tracks;
         }
 
@@ -93,10 +92,10 @@ namespace opendspx {
 
     private:
         int m_resolution{};
-        QList<Tempo> m_tempos;
-        QList<TimeSignature> m_timeSignatures;
-        QList<Marker> m_markers;
-        QList<Track> m_tracks;
+        std::vector<Tempo> m_tempos;
+        std::vector<TimeSignature> m_timeSignatures;
+        std::vector<Marker> m_markers;
+        std::vector<Track> m_tracks;
 
     };
 
