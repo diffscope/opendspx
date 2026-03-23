@@ -74,7 +74,8 @@ namespace opendspx {
             case Model::Version::V1:
                 return JsonConverterV1::fromJson<Model>(obj, errors, options);
         }
-        Q_UNREACHABLE();
+        assert(false && "Unrecognized version");
+        return {};
     }
 
 }

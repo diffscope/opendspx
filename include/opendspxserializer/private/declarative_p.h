@@ -187,7 +187,7 @@ namespace opendspx::impl::decl {
             }
             const auto &v = object.at(propertyName);
             bool ok = Convert::template getFromJsonFunc<PropertyType>()(v, entity.*propertyPtr, {context.errors, context.options, context.path + "." + propertyName});
-            if ((context.options & Serializer::FailFast) && context.errors.containsError()) {
+            if (!ok && (context.options & Serializer::FailFast)) {
                 return false;
             }
             return ok;
@@ -195,7 +195,7 @@ namespace opendspx::impl::decl {
         static bool toJson(nlohmann::json &object, const EntityType &entity, const JsonSerializationContext &context) {
             const auto &v = entity.*propertyPtr;
             bool ok = Convert::template getToJsonFunc<PropertyType>()(object[propertyName], v, {context.errors, context.options, context.path + "." + propertyName});
-            if ((context.options & Serializer::FailFast) && context.errors.containsError()) {
+            if (!ok && (context.options & Serializer::FailFast)) {
                 return false;
             }
             return ok;
@@ -207,10 +207,12 @@ namespace opendspx::impl::decl {
         static bool fromJson(const nlohmann::json &object_, T &entity, const JsonSerializationContext &context) {
             nlohmann::json object;
             bool ok = fromJsonObjectHelperWithPropertyCheck(std::array{PropertyDecls::propertyName...})(object_, object, context);
-            if ((context.options & Serializer::FailFast) && context.errors.containsError()) {
+            if (!ok && (context.options & Serializer::FailFast)) {
                 return false;
             }
-            return ok && (PropertyDecls::fromJson(object, entity, context) && ...);
+            if (context.options & Serializer::FailFast)
+                return (PropertyDecls::fromJson(object, entity, context) && ...);
+            return (PropertyDecls::fromJson(object, entity, context), ...);
         }
         static bool fromJson(const nlohmann::json &object, std::shared_ptr<T> &entity, const JsonSerializationContext &context) {
             if (!entity) {
@@ -219,7 +221,9 @@ namespace opendspx::impl::decl {
             return fromJson(object, *entity, context);
         }
         static bool toJson(nlohmann::json &object, const T &entity, const JsonSerializationContext &context) {
-            return (PropertyDecls::toJson(object, entity, context) && ...);
+            if (context.options & Serializer::FailFast)
+                return (PropertyDecls::toJson(object, entity, context) && ...);
+            return (PropertyDecls::toJson(object, entity, context), ...);
         }
         static bool toJson(nlohmann::json &object, const std::shared_ptr<T> &entity, const JsonSerializationContext &context) {
             return toJson(object, *entity, context);
@@ -242,7 +246,8 @@ namespace opendspx::impl::decl {
         static bool fromJson(const nlohmann::json &object_, std::shared_ptr<T> &entity, const JsonSerializationContext &context) {
             nlohmann::json object;
             bool ok = fromJsonObjectHelper(object_, object, context);
-            if ((context.options & Serializer::FailFast) && context.errors.containsError()) {
+            if (!ok) {
+                // Ignore fail-fast, because even if fail-fast is disabled, nothing can be done
                 return false;
             }
             if (!object.contains(objectTypePropertyName)) {
@@ -250,7 +255,7 @@ namespace opendspx::impl::decl {
                     context.errors.addError<MissingPropertyError>(context.path, std::vector<std::string>{objectTypePropertyName});
                     return false;
                 } else {
-                    entity = nullptr;
+                    // Cannot determine object type, so here just do nothing and return
                     return true;
                 }
             }
@@ -266,11 +271,10 @@ namespace opendspx::impl::decl {
                     context.errors.addError<InvalidObjectTypeError>(context.path, objectTypeName, std::vector<std::string>{DeriveDecls::objectTypeName...});
                     return false;
                 } else {
-                    entity = nullptr;
                     return true;
                 }
             }
-            return fwdRet && ok;
+            return fwdRet;
         }
         static bool toJson(nlohmann::json &object, const T &entity, const JsonSerializationContext &context) {
             auto objectTypeEnum = entity.*objectTypePropertyPtr;
@@ -293,16 +297,15 @@ namespace opendspx::impl::decl {
         static bool fromJson(const nlohmann::json &object_, T &entity, const JsonSerializationContext &context) {
             nlohmann::json object;
             bool ok = fromJsonObjectHelper(object_, object, context);
-            if ((context.options & Serializer::FailFast) && context.errors.containsError()) {
-                return false;
-            }
             if (!ok) {
+                // Ignore fail-fast, because even if fail-fast is disabled, nothing can be done
                 return false;
             }
             for (auto it = object.begin(); it != object.end(); ++it) {
                 typename T::mapped_type contentEntity;
                 if (!TrivialOrMappingConvert::getFromJsonFunc<typename T::mapped_type>()(it.value(), contentEntity, context)) {
-                    return false;
+                    if (context.options & Serializer::FailFast)
+                        return false;
                 }
                 entity[it.key()] = contentEntity;
             }
@@ -318,7 +321,8 @@ namespace opendspx::impl::decl {
             for (const auto &[key, value] : entity) {
                 nlohmann::json contentJson;
                 if (!TrivialOrMappingConvert::getToJsonFunc<decltype(value)>()(contentJson, value, context)) {
-                    return false;
+                    if (context.options & Serializer::FailFast)
+                        return false;
                 }
                 object[key] = contentJson;
             }

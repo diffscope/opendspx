@@ -61,7 +61,7 @@ namespace opendspx::impl {
             if (it == enumValues.end()) {
                 json = {};
                 if (!(context.options & Serializer::CheckError)) {
-                    return false;
+                    return true;
                 }
                 std::vector<std::any> a;
                 for (auto &pair : enumValues) {
@@ -85,13 +85,15 @@ namespace opendspx::impl {
             auto index = std::distance(entity.begin(), it);
             nlohmann::json item;
             ok = toJson(item, *it, JsonSerializationContext{context.errors, context.options, context.path + "[" + std::to_string(index) + "]"}) && ok;
-            array.push_back(std::move(item));
-            if ((context.options & Serializer::FailFast) && context.errors.containsError()) {
+            if ((context.options & Serializer::FailFast) && !ok) {
                 json = std::move(array);
                 return false;
             }
+            array.push_back(std::move(item));
         }
         json = std::move(array);
+        if (!(context.options & Serializer::CheckError))
+            return true;
         return ok;
     }
 
@@ -125,7 +127,7 @@ namespace opendspx::impl {
     inline bool fromJsonStringHelper(const nlohmann::json &value, std::string &out, const JsonSerializationContext &context) {
         if (!(context.options & Serializer::CheckError)) {
             out = value.is_string() ? value.get<std::string>() : std::string{};
-            return value.is_string();
+            return true;
         }
         if (auto actualType = getDataType(value); actualType != InvalidDataTypeError::String) {
             context.errors.addError<InvalidDataTypeError>(context.path, actualType, std::vector{InvalidDataTypeError::String});
@@ -142,7 +144,7 @@ namespace opendspx::impl {
         const std::optional<double> maximum = maximum_;
         if (!(context.options & Serializer::CheckError)) {
             out = value.is_number() ? value.get<double>() : 0;
-            return value.is_number();
+            return true;
         }
         if (auto actualType = getDataType(value); actualType != InvalidDataTypeError::Double && actualType != InvalidDataTypeError::Integer) {
             context.errors.addError<InvalidDataTypeError>(context.path, actualType, std::vector{InvalidDataTypeError::Double, InvalidDataTypeError::Integer});
@@ -177,7 +179,7 @@ namespace opendspx::impl {
         const std::optional<int> maximum = maximum_;
         if (!(context.options & Serializer::CheckError)) {
             out = value.is_number() ? value.get<int>() : 0;
-            return value.is_number();
+            return true;
         }
         if (auto actualType = getDataType(value); actualType != InvalidDataTypeError::Integer) {
             context.errors.addError<InvalidDataTypeError>(context.path, actualType, std::vector{InvalidDataTypeError::Integer});
@@ -209,7 +211,7 @@ namespace opendspx::impl {
     inline bool fromJsonBoolHelper(const nlohmann::json &value, bool &out, const JsonSerializationContext &context) {
         if (!(context.options & Serializer::CheckError)) {
             out = value.is_boolean() ? value.get<bool>() : false;
-            return value.is_boolean();
+            return true;
         }
         if (auto actualType = getDataType(value); actualType != InvalidDataTypeError::Bool) {
             context.errors.addError<InvalidDataTypeError>(context.path, actualType, std::vector{InvalidDataTypeError::Bool});
@@ -234,7 +236,7 @@ namespace opendspx::impl {
             if (!(context.options & Serializer::CheckError)) {
                 if (auto actualType = getDataType(value); actualType != Flag) {
                     out = {};
-                    return false;
+                    return true;
                 }
                 auto s = value.get<EnumType>();
                 auto it = std::ranges::find_if(enumValues, [s](const auto &pair) {
@@ -242,7 +244,7 @@ namespace opendspx::impl {
                 });
                 if (it == enumValues.end()) {
                     out = {};
-                    return false;
+                    return true;
                 }
                 out = it->second;
                 return true;
@@ -294,13 +296,15 @@ namespace opendspx::impl {
             }
             list.push_back(std::move(v));
         }
+        if (!(context.options & Serializer::CheckError))
+            return true;
         return ok;
     }
 
     inline bool fromJsonObjectHelper(const nlohmann::json &value, nlohmann::json &out, const JsonSerializationContext &context) {
         if (!(context.options & Serializer::CheckError)) {
             out = value.is_object() ? value : nlohmann::json::object();
-            return value.is_object();
+            return true;
         }
         if (auto actualType = getDataType(value); actualType != InvalidDataTypeError::Object) {
             context.errors.addError<InvalidDataTypeError>(context.path, actualType, std::vector{InvalidDataTypeError::Object});
@@ -319,7 +323,7 @@ namespace opendspx::impl {
         bool operator()(const nlohmann::json &value, nlohmann::json &out, const JsonSerializationContext &context) const {
             if (!(context.options & Serializer::CheckError)) {
                 out = value.is_object() ? value : nlohmann::json::object();
-                return value.is_object();
+                return true;
             }
             if (auto actualType = getDataType(value); actualType != InvalidDataTypeError::Object) {
                 context.errors.addError<InvalidDataTypeError>(context.path, actualType, std::vector{InvalidDataTypeError::Object});
@@ -328,6 +332,7 @@ namespace opendspx::impl {
             }
             const auto &obj = value;
             std::vector<std::string> missingProperties;
+            std::vector<std::string> redundantProperties;
             for (auto &property : properties) {
                 if (!obj.contains(property)) {
                     missingProperties.push_back(property);
@@ -337,7 +342,6 @@ namespace opendspx::impl {
                 context.errors.addError<MissingPropertyError>(context.path, std::move(missingProperties));
             }
             if (!(context.options & Serializer::TolerateRedundantProperty) && obj.size() + missingProperties.size() > properties.size()) {
-                std::vector<std::string> redundantProperties;
                 for (auto it = obj.begin(); it != obj.end(); ++it) {
                     if (!std::ranges::any_of(properties, [it](const auto &property) {
                         return it.key() == property;
@@ -348,7 +352,7 @@ namespace opendspx::impl {
                 context.errors.addError<RedundantPropertyError>(context.path, std::move(redundantProperties));
             }
             out = obj;
-            return missingProperties.empty() && ((context.options & Serializer::TolerateRedundantProperty) || obj.size() + missingProperties.size() <= properties.size());
+            return missingProperties.empty() && ((context.options & Serializer::TolerateRedundantProperty) || redundantProperties.empty());
         }
 
         std::array<const char *, N> properties;

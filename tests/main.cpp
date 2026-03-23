@@ -1,3 +1,6 @@
+#include <iostream>
+#include <sstream>
+
 #include <opendspx/model.h>
 #include <opendspxserializer/serializer.h>
 
@@ -60,7 +63,7 @@ const auto data = R"(
                         "type": "singing",
                         "name": "Verse 1 Vocal",
                         "time": {
-                            "start": 0,
+                            "pos": 0,
                             "length": 7680,
                             "clipStart": 0,
                             "clipLen": 7680
@@ -329,7 +332,7 @@ const auto data = R"(
                         "name": "Background Music",
                         "path": "assets/background.wav",
                         "time": {
-                            "start": 0,
+                            "pos": 0,
                             "length": 15360,
                             "clipStart": 0,
                             "clipLen": 15360
@@ -361,9 +364,11 @@ const auto data = R"(
 
 int main() {
     SerializationErrorList errors;
-    auto model = Serializer::deserialize(data, errors);
-    qDebug() << errors.size();
-    auto data1 = Serializer::serialize(model, errors);
-    qDebug().noquote() << QJsonDocument::fromJson(data1).toJson(QJsonDocument::Indented);
+    std::stringstream in(data, std::ios::in);
+    auto model = Serializer::deserialize(in, errors);
+    std::cerr << errors.size() << std::endl;
+    std::stringstream out;
+    Serializer::serialize(out, model, errors);
+    std::cout << out.str() << std::endl;
     return 0;
 }

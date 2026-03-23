@@ -129,7 +129,9 @@ macro(_opendspx_add_library identifier)
     )
     target_include_directories(${OPENDSPX_${IDENTIFIER}_TARGET} PRIVATE include/opendspx${identifier})
 
-    target_link_libraries(${OPENDSPX_${IDENTIFIER}_TARGET} PUBLIC Qt${QT_VERSION_MAJOR}::Core)
+    if(IDENTIFIER EQUAL CONVERTER)
+        target_link_libraries(${OPENDSPX_${IDENTIFIER}_TARGET} PUBLIC Qt${QT_VERSION_MAJOR}::Core)
+    endif()
     target_link_libraries(${OPENDSPX_${IDENTIFIER}_TARGET} PUBLIC ${OPENDSPX_MODEL_TARGET})
     target_link_libraries(${OPENDSPX_${IDENTIFIER}_TARGET} PRIVATE stdcorelib::stdcorelib)
 
