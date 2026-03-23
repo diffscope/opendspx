@@ -24,6 +24,7 @@ namespace opendspx::impl {
     bool toJsonNumberHelperWithConstraint(nlohmann::json &json, const T &value, const JsonSerializationContext &context) {
         const std::optional<T> minimum = minimum_;
         const std::optional<T> maximum = maximum_;
+        json = 0;
         if (!(context.options & Serializer::CheckError)) {
             json = value;
             return true;
@@ -79,19 +80,17 @@ namespace opendspx::impl {
 
     template <typename T, auto toJson = toJsonTrivial<T>>
     bool toJsonArrayHelper(nlohmann::json &json, const std::vector<T> &entity, const JsonSerializationContext &context) {
-        nlohmann::json array = nlohmann::json::array();
+        json = nlohmann::json::array();
         bool ok = true;
         for (auto it = entity.begin(); it != entity.end(); ++it) {
             auto index = std::distance(entity.begin(), it);
             nlohmann::json item;
             ok = toJson(item, *it, JsonSerializationContext{context.errors, context.options, context.path + "[" + std::to_string(index) + "]"}) && ok;
             if ((context.options & Serializer::FailFast) && !ok) {
-                json = std::move(array);
                 return false;
             }
-            array.push_back(std::move(item));
+            json.push_back(std::move(item));
         }
-        json = std::move(array);
         if (!(context.options & Serializer::CheckError))
             return true;
         return ok;

@@ -221,6 +221,7 @@ namespace opendspx::impl::decl {
             return fromJson(object, *entity, context);
         }
         static bool toJson(nlohmann::json &object, const T &entity, const JsonSerializationContext &context) {
+            object = nlohmann::json::object();
             if (context.options & Serializer::FailFast)
                 return (PropertyDecls::toJson(object, entity, context) && ...);
             return (PropertyDecls::toJson(object, entity, context), ...);
@@ -318,6 +319,7 @@ namespace opendspx::impl::decl {
             return fromJson(object, *entity, context);
         }
         static bool toJson(nlohmann::json &object, const T &entity, const JsonSerializationContext &context) {
+            object = nlohmann::json::object();
             for (const auto &[key, value] : entity) {
                 nlohmann::json contentJson;
                 if (!TrivialOrMappingConvert::getToJsonFunc<decltype(value)>()(contentJson, value, context)) {
