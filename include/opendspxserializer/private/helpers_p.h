@@ -20,40 +20,34 @@ namespace opendspx::impl {
         return true;
     }
 
-    struct toJsonNumberHelperWithConstraint {
-        explicit toJsonNumberHelperWithConstraint(std::optional<double> minimum = {}, std::optional<double> maximum = {}) : maximum(maximum), minimum(minimum) {
-        }
-
-        template <typename T>
-        bool operator()(nlohmann::json &json, const T &value, const JsonSerializationContext &context) const {
-            if (!(context.options & Serializer::CheckError)) {
-                json = value;
-                return true;
-            }
-            bool ok = true;
-            if (minimum.has_value() && maximum.has_value()) {
-                if (value < minimum || value > maximum) {
-                    context.errors.addError<RangeConstraintViolationError>(context.path, value, minimum.value(), maximum.value());
-                    ok = false;
-                }
-            } else if (minimum.has_value()) {
-                if (value < minimum) {
-                    context.errors.addError<RangeConstraintViolationError>(context.path, value, minimum.value(), std::any());
-                    ok = false;
-                }
-            } else if (maximum.has_value()) {
-                if (value > maximum) {
-                    context.errors.addError<RangeConstraintViolationError>(context.path, value, std::any(), maximum.value());
-                    ok = false;
-                }
-            }
+    template <typename T, auto minimum_ = std::nullopt, auto maximum_ = std::nullopt>
+    bool toJsonNumberHelperWithConstraint(nlohmann::json &json, const T &value, const JsonSerializationContext &context) {
+        const std::optional<T> minimum = minimum_;
+        const std::optional<T> maximum = maximum_;
+        if (!(context.options & Serializer::CheckError)) {
             json = value;
-            return ok;
+            return true;
         }
-
-        std::optional<double> maximum;
-        std::optional<double> minimum;
-    };
+        bool ok = true;
+        if (minimum.has_value() && maximum.has_value()) {
+            if (value < minimum || value > maximum) {
+                context.errors.addError<RangeConstraintViolationError>(context.path, value, minimum.value(), maximum.value());
+                ok = false;
+            }
+        } else if (minimum.has_value()) {
+            if (value < minimum) {
+                context.errors.addError<RangeConstraintViolationError>(context.path, value, minimum.value(), std::any());
+                ok = false;
+            }
+        } else if (maximum.has_value()) {
+            if (value > maximum) {
+                context.errors.addError<RangeConstraintViolationError>(context.path, value, std::any(), maximum.value());
+                ok = false;
+            }
+        }
+        json = value;
+        return ok;
+    }
 
     template <typename K, typename T, size_t N>
     struct toJsonEnumHelper {
@@ -142,85 +136,75 @@ namespace opendspx::impl {
         return true;
     }
 
-    struct fromJsonDoubleHelperWithConstraint {
-        explicit fromJsonDoubleHelperWithConstraint(std::optional<double> minimum = {}, std::optional<double> maximum = {}) : maximum(maximum), minimum(minimum) {
+    template <auto minimum_ = std::nullopt, auto maximum_ = std::nullopt>
+    bool fromJsonDoubleHelperWithConstraint(const nlohmann::json &value, double &out, const JsonSerializationContext &context) {
+        const std::optional<double> minimum = minimum_;
+        const std::optional<double> maximum = maximum_;
+        if (!(context.options & Serializer::CheckError)) {
+            out = value.is_number() ? value.get<double>() : 0;
+            return value.is_number();
         }
-
-        bool operator()(const nlohmann::json &value, double &out, const JsonSerializationContext &context) const {
-            if (!(context.options & Serializer::CheckError)) {
-                out = value.is_number() ? value.get<double>() : 0;
-                return value.is_number();
-            }
-            if (auto actualType = getDataType(value); actualType != InvalidDataTypeError::Double && actualType != InvalidDataTypeError::Integer) {
-                context.errors.addError<InvalidDataTypeError>(context.path, actualType, std::vector{InvalidDataTypeError::Double, InvalidDataTypeError::Integer});
-                out = {};
-                return false;
-            }
-            auto v = value.get<double>();
-            bool ok = true;
-            if (minimum.has_value() && maximum.has_value()) {
-                if (v < minimum || v > maximum) {
-                    context.errors.addError<RangeConstraintViolationError>(context.path, v, minimum.value(), maximum.value());
-                    ok = false;
-                }
-            } else if (minimum.has_value()) {
-                if (v < minimum) {
-                    context.errors.addError<RangeConstraintViolationError>(context.path, v, minimum.value(), std::any());
-                    ok = false;
-                }
-            } else if (maximum.has_value()) {
-                if (v > maximum) {
-                    context.errors.addError<RangeConstraintViolationError>(context.path, v, std::any(), maximum.value());
-                    ok = false;
-                }
-            }
-            out = v;
-            return ok;
+        if (auto actualType = getDataType(value); actualType != InvalidDataTypeError::Double && actualType != InvalidDataTypeError::Integer) {
+            context.errors.addError<InvalidDataTypeError>(context.path, actualType, std::vector{InvalidDataTypeError::Double, InvalidDataTypeError::Integer});
+            out = {};
+            return false;
         }
-
-        std::optional<double> maximum;
-        std::optional<double> minimum;
-    };
-
-    struct fromJsonIntHelperWithConstraint {
-        explicit fromJsonIntHelperWithConstraint(std::optional<int> minimum = {}, std::optional<int> maximum = {}) : maximum(maximum), minimum(minimum) {
+        auto v = value.get<double>();
+        bool ok = true;
+        if (minimum.has_value() && maximum.has_value()) {
+            if (v < minimum || v > maximum) {
+                context.errors.addError<RangeConstraintViolationError>(context.path, v, minimum.value(), maximum.value());
+                ok = false;
+            }
+        } else if (minimum.has_value()) {
+            if (v < minimum) {
+                context.errors.addError<RangeConstraintViolationError>(context.path, v, minimum.value(), std::any());
+                ok = false;
+            }
+        } else if (maximum.has_value()) {
+            if (v > maximum) {
+                context.errors.addError<RangeConstraintViolationError>(context.path, v, std::any(), maximum.value());
+                ok = false;
+            }
         }
+        out = v;
+        return ok;
+    }
 
-        bool operator()(const nlohmann::json &value, int &out, const JsonSerializationContext &context) const {
-            if (!(context.options & Serializer::CheckError)) {
-                out = value.is_number() ? value.get<int>() : 0;
-                return value.is_number();
-            }
-            if (auto actualType = getDataType(value); actualType != InvalidDataTypeError::Integer) {
-                context.errors.addError<InvalidDataTypeError>(context.path, actualType, std::vector{InvalidDataTypeError::Integer});
-                out = {};
-                return false;
-            }
-            auto v = value.get<int>();
-            bool ok = true;
-            if (minimum.has_value() && maximum.has_value()) {
-                if (v < minimum || v > maximum) {
-                    context.errors.addError<RangeConstraintViolationError>(context.path, v, minimum.value(), maximum.value());
-                    ok = false;
-                }
-            } else if (minimum.has_value()) {
-                if (v < minimum) {
-                    context.errors.addError<RangeConstraintViolationError>(context.path, v, minimum.value(), std::any());
-                    ok = false;
-                }
-            } else if (maximum.has_value()) {
-                if (v > maximum) {
-                    context.errors.addError<RangeConstraintViolationError>(context.path, v, std::any(), maximum.value());
-                    ok = false;
-                }
-            }
-            out = v;
-            return ok;
+    template <auto minimum_ = std::nullopt, auto maximum_ = std::nullopt>
+    bool fromJsonIntHelperWithConstraint(const nlohmann::json &value, int &out, const JsonSerializationContext &context) {
+        const std::optional<int> minimum = minimum_;
+        const std::optional<int> maximum = maximum_;
+        if (!(context.options & Serializer::CheckError)) {
+            out = value.is_number() ? value.get<int>() : 0;
+            return value.is_number();
         }
-
-        std::optional<int> maximum;
-        std::optional<int> minimum;
-    };
+        if (auto actualType = getDataType(value); actualType != InvalidDataTypeError::Integer) {
+            context.errors.addError<InvalidDataTypeError>(context.path, actualType, std::vector{InvalidDataTypeError::Integer});
+            out = {};
+            return false;
+        }
+        auto v = value.get<int>();
+        bool ok = true;
+        if (minimum.has_value() && maximum.has_value()) {
+            if (v < minimum || v > maximum) {
+                context.errors.addError<RangeConstraintViolationError>(context.path, v, minimum.value(), maximum.value());
+                ok = false;
+            }
+        } else if (minimum.has_value()) {
+            if (v < minimum) {
+                context.errors.addError<RangeConstraintViolationError>(context.path, v, minimum.value(), std::any());
+                ok = false;
+            }
+        } else if (maximum.has_value()) {
+            if (v > maximum) {
+                context.errors.addError<RangeConstraintViolationError>(context.path, v, std::any(), maximum.value());
+                ok = false;
+            }
+        }
+        out = v;
+        return ok;
+    }
 
     inline bool fromJsonBoolHelper(const nlohmann::json &value, bool &out, const JsonSerializationContext &context) {
         if (!(context.options & Serializer::CheckError)) {

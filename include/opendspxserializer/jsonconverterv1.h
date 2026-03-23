@@ -200,7 +200,7 @@ namespace opendspx {
             using type = Entity<ParamCurveFree,
                 Property<&ParamCurveFree::start, "start">,
                 Property<&ParamCurveFree::step, "step", RangeConstraintConvert<5, 5>>,
-                Property<&ParamCurveFree::values, "values">,
+                Property<&ParamCurveFree::values, "values", ArrayRangeConstraintConvert<>>,
                 Property<&ParamCurveFree::type, "type", EnumConstraintConvert<PARAM_CURVE_FREE_TYPE_ENUM_DEFS>>
             >;
         };

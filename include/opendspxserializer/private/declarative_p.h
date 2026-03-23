@@ -52,9 +52,9 @@ namespace opendspx::impl::decl {
                     return true;
                 };
             } else if constexpr (std::is_same_v<T, int>) {
-                return fromJsonIntHelperWithConstraint();
+                return fromJsonIntHelperWithConstraint<>;
             } else if constexpr (std::is_same_v<T, double>) {
-                return fromJsonDoubleHelperWithConstraint();
+                return fromJsonDoubleHelperWithConstraint<>;
             } else if constexpr (std::is_same_v<T, bool>) {
                 return fromJsonBoolHelper;
             } else if constexpr (std::is_same_v<T, std::string>) {
@@ -117,9 +117,9 @@ namespace opendspx::impl::decl {
         template <typename T>
         static constexpr auto getFromJsonFunc() {
             if constexpr (std::is_same_v<T, int>) {
-                return fromJsonIntHelperWithConstraint(minValue, maxValue);
+                return fromJsonIntHelperWithConstraint<minValue, maxValue>;
             } else if constexpr (std::is_same_v<T, double>) {
-                return fromJsonDoubleHelperWithConstraint(minValue, maxValue);
+                return fromJsonDoubleHelperWithConstraint<minValue, maxValue>;
             } else {
                 static_assert(sizeof(T) == 0, "Unsupported type");
             }
@@ -128,8 +128,28 @@ namespace opendspx::impl::decl {
         template <typename T>
         static constexpr auto getToJsonFunc() {
             return [] (nlohmann::json &json, const T &value, const JsonSerializationContext &context) {
-                return toJsonNumberHelperWithConstraint(minValue, maxValue).operator()(json, value, context);
+                return toJsonNumberHelperWithConstraint<T, minValue, maxValue>(json, value, context);
             };
+        }
+    };
+
+    template <auto minValue = std::nullopt, auto maxValue = std::nullopt>
+    struct ArrayRangeConstraintConvert {
+        template <typename T_>
+        static constexpr auto getFromJsonFunc() {
+            using T = std::remove_cvref_t<T_>;
+            if constexpr (std::is_same_v<typename T::value_type, int>) {
+                return fromJsonArrayHelper<int, fromJsonIntHelperWithConstraint<minValue, maxValue>>;
+            } else if constexpr (std::is_same_v<typename T::value_type, double>) {
+                return fromJsonArrayHelper<double, fromJsonDoubleHelperWithConstraint<minValue, maxValue>>;
+            } else {
+                static_assert(sizeof(T) == 0, "Unsupported type");
+            }
+        }
+
+        template <typename T_>
+        static constexpr auto getToJsonFunc() {
+            return toJsonArrayHelper<typename T_::value_type, toJsonNumberHelperWithConstraint<typename T_::value_type, minValue, maxValue>>;
         }
     };
 

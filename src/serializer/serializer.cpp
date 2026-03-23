@@ -36,7 +36,7 @@ namespace opendspx {
                 doc = JsonConverterV1::toJson(model, errors, options);
                 break;
             default: {
-                errors.addError<UnrecognizedVersionError>(model.version);
+                errors.addError<UnrecognizedVersionError>(static_cast<int>(model.version));
                 return;
             }
         }
