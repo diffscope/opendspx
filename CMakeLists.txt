@@ -7,6 +7,7 @@ project(opendspx VERSION 0.0.1.5 LANGUAGES C CXX)
 # ----------------------------------
 option(OPENDSPX_BUILD_STATIC "Build static library" OFF)
 option(OPENDSPX_BUILD_TESTS "Build test cases" OFF)
+option(OPENDSPX_BUILD_INTERPOLATOR "Build interpolator" ON)
 option(OPENDSPX_BUILD_SERIALIZER "Build serializer" ON)
 option(OPENDSPX_BUILD_CONVERTER "Build converter" ON)
 option(OPENDSPX_INSTALL "Install library" ON)
@@ -58,6 +59,7 @@ set(OPENDSPX_INSTALL_NAME ${PROJECT_NAME})
 set(CMAKE_POSITION_INDEPENDENT_CODE on)
 
 set(OPENDSPX_MODEL_TARGET ${PROJECT_NAME}model)
+set(OPENDSPX_INTERPOLATOR_TARGET ${PROJECT_NAME}interpolator)
 set(OPENDSPX_SERIALIZER_TARGET ${PROJECT_NAME}serializer)
 set(OPENDSPX_CONVERTER_TARGET ${PROJECT_NAME}converter)
 set(CURRENT_YEAR)
@@ -73,7 +75,7 @@ if (WIN32)
     include(cmake/winrc.cmake)
 endif()
 
-if (TRUE)
+if(TRUE)
     # Add library
     add_library(${OPENDSPX_MODEL_TARGET} INTERFACE)
     add_library(${PROJECT_NAME}::model ALIAS ${OPENDSPX_MODEL_TARGET})
@@ -100,8 +102,38 @@ if (TRUE)
                 LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" OPTIONAL
                 ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" OPTIONAL
         )
-    endif ()
-endif ()
+    endif()
+endif()
+
+if(OPENDSPX_BUILD_INTERPOLATOR)
+    # Add library
+    add_library(${OPENDSPX_INTERPOLATOR_TARGET} INTERFACE)
+    add_library(${PROJECT_NAME}::interpolator ALIAS ${OPENDSPX_INTERPOLATOR_TARGET})
+
+    # Add features
+    target_compile_features(${OPENDSPX_INTERPOLATOR_TARGET} INTERFACE cxx_std_20 cxx_std_17)
+
+    # Include directories
+    target_include_directories(${OPENDSPX_INTERPOLATOR_TARGET} INTERFACE
+            "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    )
+
+    # Link libraries
+    target_link_libraries(${OPENDSPX_INTERPOLATOR_TARGET} INTERFACE nlohmann_json::nlohmann_json)
+
+    if (OPENDSPX_INSTALL)
+        target_include_directories(${OPENDSPX_INTERPOLATOR_TARGET} INTERFACE
+                "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+        )
+
+        install(TARGETS ${OPENDSPX_INTERPOLATOR_TARGET}
+                EXPORT ${OPENDSPX_INSTALL_NAME}Targets
+                RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" OPTIONAL
+                LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" OPTIONAL
+                ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" OPTIONAL
+        )
+    endif()
+endif()
 
 macro(_opendspx_add_library identifier)
     string(TOUPPER "${identifier}" IDENTIFIER)
