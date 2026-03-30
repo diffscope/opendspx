@@ -66,7 +66,7 @@ const auto data = R"(
                             "clipLen": 7680
                         },
                         "control": {
-                            "gain": 1.0,
+                            "gain": -1.0,
                             "mute": false,
                             "pan": 0.0
                         },

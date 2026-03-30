@@ -65,7 +65,7 @@ namespace QDspx{
     template <>
     QJsonValue JsonConverterV1::toJson<BusControl>(const BusControl &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
         QJsonObject object;
-        TO_JSON_PROPERTY_FAIL_FAST(entity., gain, toJsonNumberHelperWithConstraint(0), object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., gain, toJsonTrivial, object);
         TO_JSON_PROPERTY_FAIL_FAST(entity., pan, toJsonNumberHelperWithConstraint(-1, 1), object);
         TO_JSON_PROPERTY_FAIL_FAST(entity., mute, toJsonTrivial, object);
         return object;
@@ -76,7 +76,7 @@ namespace QDspx{
         QJsonObject object;
         FROM_JSON_FAIL_FAST(object, json, fromJsonObjectHelperWithPropertyCheck(std::array{"gain", "pan", "mute"}), {});
         BusControl control;
-        FROM_JSON_PROPERTY_FAIL_FAST(control., gain, fromJsonDoubleHelperWithConstraint(0), control);
+        FROM_JSON_PROPERTY_FAIL_FAST(control., gain, fromJsonDoubleHelper, control);
         FROM_JSON_PROPERTY_FAIL_FAST(control., pan, fromJsonDoubleHelperWithConstraint(-1, 1), control);
         FROM_JSON_PROPERTY_FAIL_FAST(control., mute, fromJsonBoolHelper, control);
         return control;
@@ -665,7 +665,7 @@ namespace QDspx{
     template <>
     QJsonValue JsonConverterV1::toJson<TrackControl>(const TrackControl &entity, SerializationErrorList &errors, Serializer::Option options, const QString &path) {
         QJsonObject object;
-        TO_JSON_PROPERTY_FAIL_FAST(entity., gain, toJsonNumberHelperWithConstraint(0), object);
+        TO_JSON_PROPERTY_FAIL_FAST(entity., gain, toJsonTrivial, object);
         TO_JSON_PROPERTY_FAIL_FAST(entity., pan, toJsonNumberHelperWithConstraint(-1, 1), object);
         TO_JSON_PROPERTY_FAIL_FAST(entity., mute, toJsonTrivial, object);
         TO_JSON_PROPERTY_FAIL_FAST(entity., solo, toJsonTrivial, object);
@@ -677,7 +677,7 @@ namespace QDspx{
         QJsonObject object;
         FROM_JSON_FAIL_FAST(object, json, fromJsonObjectHelperWithPropertyCheck(std::array{"gain", "pan", "mute", "solo"}), {});
         TrackControl control;
-        FROM_JSON_PROPERTY_FAIL_FAST(control., gain, fromJsonDoubleHelperWithConstraint(0), control);
+        FROM_JSON_PROPERTY_FAIL_FAST(control., gain, fromJsonDoubleHelper, control);
         FROM_JSON_PROPERTY_FAIL_FAST(control., pan, fromJsonDoubleHelperWithConstraint(-1, 1), control);
         FROM_JSON_PROPERTY_FAIL_FAST(control., mute, fromJsonBoolHelper, control);
         FROM_JSON_PROPERTY_FAIL_FAST(control., solo, fromJsonBoolHelper, control);
