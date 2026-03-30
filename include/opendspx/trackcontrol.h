@@ -4,7 +4,7 @@
 namespace opendspx {
 
     struct TrackControl {
-        double gain{1.0};
+        double gain{0.0};
         double pan{0.0};
         bool mute{false};
         bool solo{false};

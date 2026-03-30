@@ -71,7 +71,7 @@ namespace opendspx {
         template<>
         struct decl::Mapping<BusControl> {
             using type = Entity<BusControl,
-                Property<&BusControl::gain, "gain", RangeConstraintConvert<0>>,
+                Property<&BusControl::gain, "gain">,
                 Property<&BusControl::mute, "mute">,
                 Property<&BusControl::pan, "pan", RangeConstraintConvert<-1, 1>>
             >;
@@ -289,7 +289,7 @@ namespace opendspx {
         template<>
         struct decl::Mapping<TrackControl> {
             using type = Entity<TrackControl,
-                Property<&TrackControl::gain, "gain", RangeConstraintConvert<0>>,
+                Property<&TrackControl::gain, "gain">,
                 Property<&TrackControl::pan, "pan", RangeConstraintConvert<-1, 1>>,
                 Property<&TrackControl::mute, "mute">,
                 Property<&TrackControl::solo, "solo">
