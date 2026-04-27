@@ -10,42 +10,42 @@
 namespace opendspx {
 
     namespace impl {
-        constexpr auto INTERP_ENUM_DEFS = std::array{
-            std::pair{"none", AnchorNode::Interpolation::None},
-            std::pair{"linear", AnchorNode::Interpolation::Linear},
-            std::pair{"hermite", AnchorNode::Interpolation::Hermite}
-        };
+        using INTERP_ENUM_DEFS = decl::EnumDef<const char *, AnchorNode::Interpolation,
+            decl::EnumEntry<decl::FixedString("none"), AnchorNode::Interpolation::None>,
+            decl::EnumEntry<decl::FixedString("linear"), AnchorNode::Interpolation::Linear>,
+            decl::EnumEntry<decl::FixedString("hermite"), AnchorNode::Interpolation::Hermite>
+        >;
 
-        constexpr auto CLIP_AUDIO_TYPE_ENUM_DEFS = std::array{
-            std::pair{"audio", Clip::Type::Audio}
-        };
+        using CLIP_AUDIO_TYPE_ENUM_DEFS = decl::EnumDef<const char *, Clip::Type,
+            decl::EnumEntry<decl::FixedString("audio"), Clip::Type::Audio>
+        >;
 
-        constexpr auto CLIP_SINGING_TYPE_ENUM_DEFS = std::array{
-            std::pair{"singing", Clip::Type::Singing}
-        };
+        using CLIP_SINGING_TYPE_ENUM_DEFS = decl::EnumDef<const char *, Clip::Type,
+            decl::EnumEntry<decl::FixedString("singing"), Clip::Type::Singing>
+        >;
 
-        constexpr auto PARAM_CURVE_ANCHOR_TYPE_ENUM_DEFS = std::array{
-            std::pair{"anchor", ParamCurve::Type::Anchor}
-        };
+        using PARAM_CURVE_ANCHOR_TYPE_ENUM_DEFS = decl::EnumDef<const char *, ParamCurve::Type,
+            decl::EnumEntry<decl::FixedString("anchor"), ParamCurve::Type::Anchor>
+        >;
 
-        constexpr auto PARAM_CURVE_FREE_TYPE_ENUM_DEFS = std::array{
-            std::pair{"free", ParamCurve::Type::Free}
-        };
+        using PARAM_CURVE_FREE_TYPE_ENUM_DEFS = decl::EnumDef<const char *, ParamCurve::Type,
+            decl::EnumEntry<decl::FixedString("free"), ParamCurve::Type::Free>
+        >;
 
-        constexpr auto MODEL_VERSION_ENUM_DEFS = std::array{
-            std::pair{"1.0.0", Model::Version::V1}
-        };
+        using MODEL_VERSION_ENUM_DEFS = decl::EnumDef<const char *, Model::Version,
+            decl::EnumEntry<decl::FixedString("1.0.0"), Model::Version::V1>
+        >;
 
-        constexpr auto DENOMINATOR_ENUM_DEFS = std::array{
-            std::pair{1, 1},
-            std::pair{2, 2},
-            std::pair{4, 4},
-            std::pair{8, 8},
-            std::pair{16, 16},
-            std::pair{32, 32},
-            std::pair{64, 64},
-            std::pair{128, 128}
-        };
+        using DENOMINATOR_ENUM_DEFS = decl::EnumDef<int, int,
+            decl::EnumEntry<1, 1>,
+            decl::EnumEntry<2, 2>,
+            decl::EnumEntry<4, 4>,
+            decl::EnumEntry<8, 8>,
+            decl::EnumEntry<16, 16>,
+            decl::EnumEntry<32, 32>,
+            decl::EnumEntry<64, 64>,
+            decl::EnumEntry<128, 128>
+        >;
 
         template<>
         struct decl::Mapping<AnchorNode> {

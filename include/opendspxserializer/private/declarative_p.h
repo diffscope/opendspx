@@ -153,16 +153,29 @@ namespace opendspx::impl::decl {
         }
     };
 
-    template <auto enumDef>
+    template <auto enumKey_, auto enumValue_>
+    struct EnumEntry {
+        static constexpr auto enumKey = enumKey_;
+        static constexpr auto enumValue = enumValue_;
+    };
+
+    template <typename K, typename T, typename... EnumEntries>
+    struct EnumDef {
+        static constexpr std::array<std::pair<K, T>, sizeof...(EnumEntries)> toArray() {
+            return {std::pair<K, T>{K(EnumEntries::enumKey), T(EnumEntries::enumValue)}...};
+        }
+    };
+
+    template <typename E>
     struct EnumConstraintConvert {
         template <typename T>
         static constexpr auto getFromJsonFunc() {
-            return fromJsonEnumHelper(enumDef);
+            return fromJsonEnumHelper(E::toArray());
         }
 
         template <typename T>
         static constexpr auto getToJsonFunc() {
-            return toJsonEnumHelper(enumDef);
+            return toJsonEnumHelper(E::toArray());
         }
     };
 
@@ -171,6 +184,9 @@ namespace opendspx::impl::decl {
         char str[N];
         constexpr FixedString(const char (&str_)[N]) {
             std::copy_n(str_, N, str);
+        }
+        constexpr operator const char*() const {
+            return str;
         }
     };
 
