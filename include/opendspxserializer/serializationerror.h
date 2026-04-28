@@ -19,6 +19,9 @@ namespace opendspx {
             InvalidObjectType = 0x1002,
             RangeConstraintViolation = 0x1101,
             EnumConstraintViolation = 0x1102,
+            InvalidRatioPartition = 0x11C1,
+            PartCountNotMatch = 0x11C2,
+            EmptySingerMixing = 0x11C3,
             MissingProperty = 0x1401,
             RedundantProperty = 0x1402,
             OverlappingItem = 0x2001,
@@ -212,6 +215,57 @@ namespace opendspx {
         std::string m_path;
         std::any m_actualEnumValue;
         std::vector<std::any> m_expectedEnumValues;
+    };
+
+    class InvalidRatioPartitionError : public SerializationError {
+    public:
+        InvalidRatioPartitionError(std::string path, std::vector<double> ratio)
+            : SerializationError(InvalidRatioPartition), m_path(std::move(path)), m_ratio(std::move(ratio)) {
+        }
+        std::string path() const {
+            return m_path;
+        }
+        std::vector<double> ratio() const {
+            return m_ratio;
+        }
+
+    private:
+        std::string m_path;
+        std::vector<double> m_ratio;
+    };
+
+    class EmptySingerMixingError : public SerializationError {
+    public:
+        EmptySingerMixingError(std::string path)
+            : SerializationError(EmptySingerMixing), m_path(std::move(path)) {
+        }
+        std::string path() const {
+            return m_path;
+        }
+    private:
+        std::string m_path;
+    };
+
+    class PartCountNotMatchError : public SerializationError {
+    public:
+        PartCountNotMatchError(std::string path, int expectedPartCount, int actualPartCount)
+            : SerializationError(PartCountNotMatch), m_path(std::move(path)), m_expectedPartCount(expectedPartCount), m_actualPartCount(actualPartCount) {
+        }
+
+        std::string path() const {
+            return m_path;
+        }
+        int expectedPartCount() const {
+            return m_expectedPartCount;
+        }
+        int actualPartCount() const {
+            return m_actualPartCount;
+        }
+
+    private:
+        std::string m_path;
+        int m_expectedPartCount;
+        int m_actualPartCount;
     };
 
     class MissingPropertyError : public SerializationError {

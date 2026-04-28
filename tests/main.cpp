@@ -307,12 +307,7 @@ const auto data = R"(
                                 "transform": []
                             }
                         },
-                        "sources": {
-                            "singer": {
-                                "name": "Default Singer",
-                                "version": "1.0"
-                            }
-                        },
+                        "sources": null,
                         "workspace": {}
                     }
                 ],

@@ -1,6 +1,7 @@
 #ifndef OPENDSPX_MODEL_SINGINGCLIP_H
 #define OPENDSPX_MODEL_SINGINGCLIP_H
 
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -18,7 +19,7 @@ namespace opendspx {
 
         std::vector<Note> notes;
         Params params;
-        Sources sources;
+        std::optional<Sources> sources;
     };
     
     using SingingClipRef = std::shared_ptr<SingingClip>;

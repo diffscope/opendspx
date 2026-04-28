@@ -1,16 +1,20 @@
 #ifndef OPENDSPX_MODEL_SOURCES_H
 #define OPENDSPX_MODEL_SOURCES_H
 
-#include <map>
 #include <string>
+#include <vector>
 
-#include <nlohmann/json.hpp>
+#include <opendspx/dynamicmixinganchor.h>
+#include <opendspx/singer.h>
+#include <opendspx/singlesinger.h>
+#include <opendspx/mixedsinger.h>
 
 namespace opendspx {
 
-    class Sources : public std::map<std::string, nlohmann::json> {
-    public:
-        using std::map<std::string, nlohmann::json>::map;
+    struct Sources {
+        std::string category;
+        std::vector<DynamicMixingAnchor> mix;
+        std::vector<SingerRef> singers;
     };
 
 }

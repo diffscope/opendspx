@@ -6,6 +6,7 @@
 #include <opendspx/model.h>
 #include <opendspxserializer/serializer.h>
 #include <opendspxserializer/private/declarative_p.h>
+#include <opendspxserializer/private/sourcehelpers_p.h>
 
 namespace opendspx {
 
@@ -22,6 +23,14 @@ namespace opendspx {
 
         using CLIP_SINGING_TYPE_ENUM_DEFS = decl::EnumDef<const char *, Clip::Type,
             decl::EnumEntry<decl::FixedString("singing"), Clip::Type::Singing>
+        >;
+
+        using SINGER_SINGLE_TYPE_ENUM_DEFS = decl::EnumDef<const char *, Singer::Type,
+            decl::EnumEntry<decl::FixedString("single"), Singer::Type::Single>
+        >;
+
+        using SINGER_MIXED_TYPE_ENUM_DEFS = decl::EnumDef<const char *, Singer::Type,
+            decl::EnumEntry<decl::FixedString("mixed"), Singer::Type::Mixed>
         >;
 
         using PARAM_CURVE_ANCHOR_TYPE_ENUM_DEFS = decl::EnumDef<const char *, ParamCurve::Type,
@@ -111,6 +120,14 @@ namespace opendspx {
             using type = Entity<ControlPoint,
                 Property<&ControlPoint::x, "x">,
                 Property<&ControlPoint::y, "y">
+            >;
+        };
+
+        template<>
+        struct decl::Mapping<DynamicMixingAnchor> {
+            using type = Entity<DynamicMixingAnchor,
+                Property<&DynamicMixingAnchor::pos, "pos", RangeConstraintConvert<0>>,
+                Property<&DynamicMixingAnchor::ratio, "ratio", SourceMixingRatioConvert>
             >;
         };
 
@@ -232,6 +249,36 @@ namespace opendspx {
         };
 
         template<>
+        struct decl::Mapping<Singer> {
+            using type = BaseEntity<Singer, &Singer::type, "type",
+                Derive<Singer::Type::Single, "single", SingleSinger>,
+                Derive<Singer::Type::Mixed, "mixed", MixedSinger>
+            >;
+        };
+
+        template<>
+        struct decl::Mapping<SingleSinger> {
+            using type = Entity<SingleSinger,
+                Property<&SingleSinger::extra, "extra">,
+                Property<&SingleSinger::id, "id">,
+                Property<&SingleSinger::type, "type", EnumConstraintConvert<SINGER_SINGLE_TYPE_ENUM_DEFS>>,
+                Property<&SingleSinger::workspace, "workspace">
+            >;
+        };
+
+        template<>
+        struct decl::Mapping<MixedSinger> {
+            using type = Entity<MixedSinger,
+                Property<&MixedSinger::extra, "extra">,
+                Property<&MixedSinger::ratio, "ratio", SourceMixingRatioConvert>,
+                Property<&MixedSinger::singers, "singers">,
+                Property<&MixedSinger::type, "type", EnumConstraintConvert<SINGER_MIXED_TYPE_ENUM_DEFS>>,
+                Property<&MixedSinger::workspace, "workspace">,
+                EntityWithRatioPostCheck
+            >;
+        };
+
+        template<>
         struct decl::Mapping<SingingClip> {
             using type = Entity<SingingClip,
                 Property<&SingingClip::control, "control">,
@@ -247,7 +294,24 @@ namespace opendspx {
 
         template<>
         struct decl::Mapping<Sources> {
-            using type = MapEntity<Sources>;
+            using type = Entity<Sources,
+                Property<&Sources::category, "category">,
+                Property<&Sources::mix, "mix">,
+                Property<&Sources::singers, "singers">,
+                EntityWithRatioPostCheck
+            >;
+        };
+
+        template<>
+        struct decl::Mapping<SourceMixingRatio> {
+            struct type {
+                static bool fromJson(const nlohmann::json &object, SourceMixingRatio &entity, const JsonSerializationContext &context) {
+                    return ArrayRangeConstraintConvert<0, 1>::template getFromJsonFunc<SourceMixingRatio>()(object, entity, context);
+                }
+                static bool toJson(nlohmann::json &object, const SourceMixingRatio &entity, const JsonSerializationContext &context) {
+                    return ArrayRangeConstraintConvert<0, 1>::template getToJsonFunc<SourceMixingRatio>()(object, entity, context);
+                }
+            };
         };
 
         template<>

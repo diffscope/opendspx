@@ -34,6 +34,12 @@ namespace opendspx::impl::decl {
     template <typename T>
     struct is_shared_ptr<std::shared_ptr<T>> : std::true_type {};
 
+    template <typename T>
+    struct is_optional : std::false_type {};
+
+    template <typename T>
+    struct is_optional<std::optional<T>> : std::true_type {};
+
     template <typename E>
     struct Mapping;
 
@@ -72,6 +78,20 @@ namespace opendspx::impl::decl {
                 return [](const nlohmann::json &object, T &entity, const JsonSerializationContext &context) {
                     return Mapping<E>::type::fromJson(object, entity, context);
                 };
+            } else if constexpr (is_optional<T>::value) {
+                using E = typename T::value_type;
+                return [](const nlohmann::json &object, T &entity, const JsonSerializationContext &context) {
+                    if (object.is_null()) {
+                        entity.reset();
+                        return true;
+                    }
+                    E value{};
+                    if (!TrivialOrMappingConvert::getFromJsonFunc<E>()(object, value, context)) {
+                        return false;
+                    }
+                    entity = std::move(value);
+                    return true;
+                };
             } else {
                 static_assert(sizeof(T) == 0, "Unsupported type");
             }
@@ -105,6 +125,15 @@ namespace opendspx::impl::decl {
                 static_assert(IsMapped<E>);
                 return [](nlohmann::json &object, const T &entity, const JsonSerializationContext &context) {
                     return Mapping<E>::type::toJson(object, entity, context);
+                };
+            } else if constexpr (is_optional<T>::value) {
+                using E = typename T::value_type;
+                return [](nlohmann::json &object, const T &entity, const JsonSerializationContext &context) {
+                    if (!entity.has_value()) {
+                        object = nullptr;
+                        return true;
+                    }
+                    return TrivialOrMappingConvert::getToJsonFunc<E>()(object, *entity, context);
                 };
             } else {
                 static_assert(sizeof(T) == 0, "Unsupported type");
@@ -218,11 +247,29 @@ namespace opendspx::impl::decl {
         }
     };
 
+    template <typename T>
+    concept HasPropertyNameMember = requires {
+        T::propertyName;
+    };
+
+    template <typename... PropertyDecls>
+    consteval auto makePropertyNameArray() {
+        constexpr size_t count = (size_t(0) + ... + (HasPropertyNameMember<PropertyDecls> ? 1 : 0));
+        std::array<const char *, count> names{};
+        size_t index = 0;
+        (([&] {
+            if constexpr (HasPropertyNameMember<PropertyDecls>) {
+                names[index++] = PropertyDecls::propertyName;
+            }
+        }()), ...);
+        return names;
+    }
+
     template <typename T, typename... PropertyDecls>
     struct Entity {
         static bool fromJson(const nlohmann::json &object_, T &entity, const JsonSerializationContext &context) {
             nlohmann::json object;
-            bool ok = fromJsonObjectHelperWithPropertyCheck(std::array{PropertyDecls::propertyName...})(object_, object, context);
+            bool ok = fromJsonObjectHelperWithPropertyCheck(makePropertyNameArray<PropertyDecls...>())(object_, object, context);
             if (!ok && (context.options & Serializer::FailFast)) {
                 return false;
             }
