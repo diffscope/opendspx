@@ -13,8 +13,8 @@
 namespace opendspx {
 
     struct SingingClip : Clip {
-        SingingClip(const std::string &name = {}, const BusControl &control = {}, const ClipTime &time = {}, const Workspace &workspace = {}, std::vector<Note> notes = {}, const Params &params = {}, const Sources &sources = {})
-            : Clip(Type::Singing, name, control, time, workspace), notes(std::move(notes)), params(params), sources(sources) {
+        SingingClip(const std::string &name = {}, const BusControl &control = {}, const ClipTime &time = {}, const Workspace &workspace = {}, std::vector<Note> notes = {}, const Params &params = {}, std::optional<Sources> sources = {})
+            : Clip(Type::Singing, name, control, time, workspace), notes(std::move(notes)), params(params), sources(std::move(sources)) {
         }
 
         std::vector<Note> notes;
