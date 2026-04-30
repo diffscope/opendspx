@@ -64,37 +64,13 @@ namespace opendspx {
         }
 
         template <typename T>
-        constexpr T fbLeftBoundary(T x0, T y0, T x1, T y1, T x2, T y2) {
-            const T h1 = x1 - x0;
-            const T h2 = x2 - x1;
-            const T delta1 = (y1 - y0) / h1;
-            const T delta2 = (y2 - y1) / h2;
-
-            T d = ((2 * h1 + h2) * delta1 - h1 * delta2) / (h1 + h2);
-
-            if (d * delta1 <= 0) {
-                d = 0;
-            } else if (delta1 * delta2 <= 0 && std::abs(d) > std::abs(3 * delta1)) {
-                d = 3 * delta1;
-            }
-            return d;
+        constexpr T fbLeftBoundary(T x0, T y0, T x1, T y1) {
+            return (y1 - y0) / (x1 - x0);
         }
 
         template <typename T>
-        constexpr T fbRightBoundary(T xn_2, T yn_2, T xn_1, T yn_1, T xn, T yn) {
-            const T h1 = xn_1 - xn_2;
-            const T h2 = xn - xn_1;
-            const T delta1 = (yn_1 - yn_2) / h1;
-            const T delta2 = (yn - yn_1) / h2;
-
-            T d = ((2 * h2 + h1) * delta2 - h2 * delta1) / (h1 + h2);
-
-            if (d * delta2 <= 0) {
-                d = 0;
-            } else if (delta1 * delta2 <= 0 && std::abs(d) > std::abs(3 * delta2)) {
-                d = 3 * delta2;
-            }
-            return d;
+        constexpr T fbRightBoundary(T xn_1, T yn_1, T xn, T yn) {
+            return (yn - yn_1) / (xn - xn_1);
         }
 
     }
@@ -109,13 +85,13 @@ namespace opendspx {
     template <typename T>
     constexpr Interpolator<T> Interpolator<T>::createWithRef1Only(T x1, T y1, T x2, T y2, T xref1, T yref1) {
         T d1 = impl::fb(xref1, yref1, x1, y1, x2, y2);
-        T d2 = impl::fbRightBoundary(xref1, yref1, x1, y1, x2, y2);
+        T d2 = impl::fbRightBoundary(x1, y1, x2, y2);
         return Interpolator{impl::calculateHermiteCoefficients(x1, y1, d1, x2, y2, d2)};
     }
 
     template <typename T>
     constexpr Interpolator<T> Interpolator<T>::createWithRef2Only(T x1, T y1, T x2, T y2, T xref2, T yref2) {
-        T d1 = impl::fbLeftBoundary(x1, y1, x2, y2, xref2, yref2);
+        T d1 = impl::fbLeftBoundary(x1, y1, x2, y2);
         T d2 = impl::fb(x1, y1, x2, y2, xref2, yref2);
         return Interpolator{impl::calculateHermiteCoefficients(x1, y1, d1, x2, y2, d2)};
     }
