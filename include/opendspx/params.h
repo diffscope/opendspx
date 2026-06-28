@@ -1,14 +1,17 @@
 #ifndef OPENDSPX_MODEL_PARAMS_H
 #define OPENDSPX_MODEL_PARAMS_H
 
-#include <QMap>
-#include <QString>
+#include <map>
+#include <string>
 
 #include <opendspx/param.h>
 
-namespace QDspx {
+namespace opendspx {
 
-    using Params = QMap<QString, Param>;
+    class Params : public std::map<std::string, Param> {
+    public:
+        using std::map<std::string, Param>::map;
+    };
 
 }
 

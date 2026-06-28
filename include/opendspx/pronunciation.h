@@ -1,13 +1,13 @@
 #ifndef OPENDSPX_MODEL_PRONUNCIATION_H
 #define OPENDSPX_MODEL_PRONUNCIATION_H
 
-#include <QString>
+#include <string>
 
-namespace QDspx {
+namespace opendspx {
 
     struct Pronunciation {
-        QString original;
-        QString edited;
+        std::string original;
+        std::string edited;
     };
 
 }

@@ -1,13 +1,12 @@
 #ifndef OPENDSPX_SERIALIZER_SERIALIZATIONERROR_H
 #define OPENDSPX_SERIALIZER_SERIALIZATIONERROR_H
 
-#include <QJsonParseError>
-#include <QList>
-#include <QSharedPointer>
-#include <QString>
-#include <QVariant>
+#include <any>
+#include <utility>
 
-namespace QDspx {
+#include <nlohmann/json.hpp>
+
+namespace opendspx {
 
     class SerializationError {
     public:
@@ -15,10 +14,14 @@ namespace QDspx {
             JsonParseFailure = 0x0001,
             JsonRootIsNotObject = 0x0002,
             UnrecognizedVersion = 0x0003,
+            CompressionFailure = 0x0041,
             InvalidDataType = 0x1001,
             InvalidObjectType = 0x1002,
             RangeConstraintViolation = 0x1101,
             EnumConstraintViolation = 0x1102,
+            InvalidRatioPartition = 0x11C1,
+            PartCountNotMatch = 0x11C2,
+            EmptySingerMixing = 0x11C3,
             MissingProperty = 0x1401,
             RedundantProperty = 0x1402,
             OverlappingItem = 0x2001,
@@ -49,18 +52,26 @@ namespace QDspx {
 
     };
 
-    using SerializationErrorRef = QSharedPointer<SerializationError>;
+    using SerializationErrorRef = std::shared_ptr<SerializationError>;
 
     class JsonParseFailureError : public SerializationError {
     public:
-        JsonParseFailureError(const QJsonParseError &error)
-            : SerializationError(JsonParseFailure), m_error(error) {
+        JsonParseFailureError(int code, std::size_t index, std::string message)
+            : SerializationError(JsonParseFailure), m_code(code), m_index(index), m_message(std::move(message)) {
         }
-        QJsonParseError error() const {
-            return m_error;
+        int code() const {
+            return m_code;
+        }
+        std::size_t index() const {
+            return m_index;
+        }
+        std::string message() const {
+            return m_message;
         }
     private:
-        QJsonParseError m_error;
+        int m_code;
+        std::size_t m_index;
+        std::string m_message;
     };
 
     class JsonRootIsNotObjectError : public SerializationError {
@@ -72,21 +83,35 @@ namespace QDspx {
 
     class UnrecognizedVersionError : public SerializationError {
     public:
-        UnrecognizedVersionError(const QString &actualVersion)
-            : SerializationError(UnrecognizedVersion), m_actualVersion(actualVersion), m_actualVersionFlag(0) {
+        UnrecognizedVersionError(std::string actualVersion)
+            : SerializationError(UnrecognizedVersion), m_actualVersion(std::move(actualVersion)), m_actualVersionFlag(0) {
         }
         UnrecognizedVersionError(int actualVersionFlag)
             : SerializationError(UnrecognizedVersion), m_actualVersionFlag(actualVersionFlag) {
         }
-        QString actualVersion() const {
+        std::string actualVersion() const {
             return m_actualVersion;
         }
         int actualVersionFlag() const {
             return m_actualVersionFlag;
         }
     private:
-        QString m_actualVersion;
+        std::string m_actualVersion;
         int m_actualVersionFlag;
+    };
+
+    class CompressionFailureError : public SerializationError {
+    public:
+        explicit CompressionFailureError(std::string message)
+            : SerializationError(CompressionFailure), m_message(std::move(message)) {
+        }
+
+        std::string message() const {
+            return m_message;
+        }
+
+    private:
+        std::string m_message;
     };
 
     class InvalidDataTypeError : public SerializationError {
@@ -101,215 +126,266 @@ namespace QDspx {
             Object,
         };
 
-        InvalidDataTypeError(const QString &path, DataType actualType, const QList<DataType> &expectedTypes)
-            : SerializationError(InvalidDataType), m_path(path), m_actualType(actualType), m_expectedTypes(expectedTypes) {
+        InvalidDataTypeError(std::string path, DataType actualType, std::vector<DataType> expectedTypes)
+            : SerializationError(InvalidDataType), m_path(std::move(path)), m_actualType(actualType), m_expectedTypes(std::move(expectedTypes)) {
         }
 
-        QString path() const {
+        std::string path() const {
             return m_path;
         }
         DataType actualType() const {
             return m_actualType;
         }
-        QList<DataType> expectedTypes() const {
+        std::vector<DataType> expectedTypes() const {
             return m_expectedTypes;
         }
 
     private:
-        QString m_path;
+        std::string m_path;
         DataType m_actualType;
-        QList<DataType> m_expectedTypes;
+        std::vector<DataType> m_expectedTypes;
 
     };
 
     class InvalidObjectTypeError : public SerializationError {
     public:
-        InvalidObjectTypeError(const QString &path, const QString &actualType, const QStringList &expectedTypes)
-            : SerializationError(InvalidObjectType), m_path(path), m_actualType(actualType), m_expectedTypes(expectedTypes) {
+        InvalidObjectTypeError(std::string path, std::string actualType, std::vector<std::string> expectedTypes)
+            : SerializationError(InvalidObjectType), m_path(std::move(path)), m_actualType(std::move(actualType)), m_expectedTypes(std::move(expectedTypes)) {
         }
 
-        QString path() const {
+        std::string path() const {
             return m_path;
         }
-        QString actualType() const {
+        std::string actualType() const {
             return m_actualType;
         }
-        QStringList expectedTypes() const {
+        std::vector<std::string> expectedTypes() const {
             return m_expectedTypes;
         }
 
     private:
-        QString m_path;
-        QString m_actualType;
-        QStringList m_expectedTypes;
+        std::string m_path;
+        std::string m_actualType;
+        std::vector<std::string> m_expectedTypes;
     };
 
     class RangeConstraintViolationError : public SerializationError {
     public:
-        RangeConstraintViolationError(const QString &path, const QVariant &actualValue, const QVariant &expectedMinimum, const QVariant &expectedMaximum)
-            : SerializationError(RangeConstraintViolation), m_path(path), m_actualValue(actualValue), m_expectedMinimum(expectedMinimum), m_expectedMaximum(expectedMaximum) {
+        RangeConstraintViolationError(std::string path, std::any actualValue, std::any expectedMinimum, std::any expectedMaximum)
+            : SerializationError(RangeConstraintViolation), m_path(std::move(path)), m_actualValue(std::move(actualValue)), m_expectedMinimum(std::move(expectedMinimum)), m_expectedMaximum(std::move(expectedMaximum)) {
         }
 
-        QString path() const {
+        std::string path() const {
             return m_path;
         }
-        QVariant actualValue() const {
+        std::any actualValue() const {
             return m_actualValue;
         }
-        QVariant expectedMinimum() const {
+        std::any expectedMinimum() const {
             return m_expectedMinimum;
         }
-        QVariant expectedMaximum() const {
+        std::any expectedMaximum() const {
             return m_expectedMaximum;
         }
 
     private:
-        QString m_path;
-        QVariant m_actualValue;
-        QVariant m_expectedMinimum;
-        QVariant m_expectedMaximum;
+        std::string m_path;
+        std::any m_actualValue;
+        std::any m_expectedMinimum;
+        std::any m_expectedMaximum;
     };
 
     class EnumConstraintViolationError : public SerializationError {
     public:
-        EnumConstraintViolationError(const QString &path, const QVariant &actualEnumValue, const QVariantList &expectedEnumValues)
-            : SerializationError(EnumConstraintViolation), m_path(path), m_actualEnumValue(actualEnumValue), m_expectedEnumValues(expectedEnumValues) {
+        EnumConstraintViolationError(std::string path, std::any actualEnumValue, std::vector<std::any> expectedEnumValues)
+            : SerializationError(EnumConstraintViolation), m_path(std::move(path)), m_actualEnumValue(std::move(actualEnumValue)), m_expectedEnumValues(std::move(expectedEnumValues)) {
         }
 
-        QString path() const {
+        std::string path() const {
             return m_path;
         }
-        QVariant actualEnumValue() const {
+        std::any actualEnumValue() const {
             return m_actualEnumValue;
         }
-        QVariantList expectedEnumValues() const {
+        std::vector<std::any> expectedEnumValues() const {
             return m_expectedEnumValues;
         }
 
     private:
-        QString m_path;
-        QVariant m_actualEnumValue;
-        QVariantList m_expectedEnumValues;
+        std::string m_path;
+        std::any m_actualEnumValue;
+        std::vector<std::any> m_expectedEnumValues;
+    };
+
+    class InvalidRatioPartitionError : public SerializationError {
+    public:
+        InvalidRatioPartitionError(std::string path, std::vector<double> ratio)
+            : SerializationError(InvalidRatioPartition), m_path(std::move(path)), m_ratio(std::move(ratio)) {
+        }
+        std::string path() const {
+            return m_path;
+        }
+        std::vector<double> ratio() const {
+            return m_ratio;
+        }
+
+    private:
+        std::string m_path;
+        std::vector<double> m_ratio;
+    };
+
+    class EmptySingerMixingError : public SerializationError {
+    public:
+        EmptySingerMixingError(std::string path)
+            : SerializationError(EmptySingerMixing), m_path(std::move(path)) {
+        }
+        std::string path() const {
+            return m_path;
+        }
+    private:
+        std::string m_path;
+    };
+
+    class PartCountNotMatchError : public SerializationError {
+    public:
+        PartCountNotMatchError(std::string path, int expectedPartCount, int actualPartCount)
+            : SerializationError(PartCountNotMatch), m_path(std::move(path)), m_expectedPartCount(expectedPartCount), m_actualPartCount(actualPartCount) {
+        }
+
+        std::string path() const {
+            return m_path;
+        }
+        int expectedPartCount() const {
+            return m_expectedPartCount;
+        }
+        int actualPartCount() const {
+            return m_actualPartCount;
+        }
+
+    private:
+        std::string m_path;
+        int m_expectedPartCount;
+        int m_actualPartCount;
     };
 
     class MissingPropertyError : public SerializationError {
     public:
-        MissingPropertyError(const QString &path, const QStringList &missingProperties)
-            : SerializationError(MissingProperty), m_path(path), m_missingProperties(missingProperties) {
+        MissingPropertyError(std::string path, std::vector<std::string> missingProperties)
+            : SerializationError(MissingProperty), m_path(std::move(path)), m_missingProperties(std::move(missingProperties)) {
         }
 
-        QString path() const {
+        std::string path() const {
             return m_path;
         }
-        QStringList missingProperties() const {
+        std::vector<std::string> missingProperties() const {
             return m_missingProperties;
         }
 
     private:
-        QString m_path;
-        QStringList m_missingProperties;
+        std::string m_path;
+        std::vector<std::string> m_missingProperties;
     };
 
     class RedundantPropertyError : public SerializationError {
     public:
-        RedundantPropertyError(const QString &path, const QStringList &redundantProperties)
+        RedundantPropertyError(const std::string &path, const std::vector<std::string> &redundantProperties)
             : SerializationError(RedundantProperty), m_path(path), m_redundantProperties(redundantProperties) {
         }
 
-        QString path() const {
+        std::string path() const {
             return m_path;
         }
-        QStringList redundantProperties() const {
+        std::vector<std::string> redundantProperties() const {
             return m_redundantProperties;
         }
 
     private:
-        QString m_path;
-        QStringList m_redundantProperties;
+        std::string m_path;
+        std::vector<std::string> m_redundantProperties;
     };
 
     class OverlappingItemError : public SerializationError {
     public:
-        OverlappingItemError(const QString &path, const QList<int> &overlappedItemIndexes)
+        OverlappingItemError(const std::string &path, const std::vector<int> &overlappedItemIndexes)
             : SerializationError(OverlappingItem), m_path(path), m_overlappedItemIndexes(overlappedItemIndexes) {
         }
 
-        QString path() const {
+        std::string path() const {
             return m_path;
         }
-        QList<int> overlappedItemIndexes() const {
+        std::vector<int> overlappedItemIndexes() const {
             return m_overlappedItemIndexes;
         }
 
     private:
-        QString m_path;
-        QList<int> m_overlappedItemIndexes;
+        std::string m_path;
+        std::vector<int> m_overlappedItemIndexes;
     };
 
     class ZeroLengthRangeError : public SerializationError {
     public:
-        ZeroLengthRangeError(const QString &path)
-            : SerializationError(ZeroLengthRange), m_path(path) {
+        ZeroLengthRangeError(std::string path)
+            : SerializationError(ZeroLengthRange), m_path(std::move(path)) {
         }
 
-        QString path() const {
+        std::string path() const {
             return m_path;
         }
 
     private:
-        QString m_path;
+        std::string m_path;
     };
 
     class ErroneousClipRangeError : public SerializationError {
     public:
-        ErroneousClipRangeError(const QString &path)
-            : SerializationError(ErroneousClipRange), m_path(path) {
+        ErroneousClipRangeError(std::string path)
+            : SerializationError(ErroneousClipRange), m_path(std::move(path)) {
         }
 
-        QString path() const {
+        std::string path() const {
             return m_path;
         }
 
     private:
-        QString m_path;
+        std::string m_path;
     };
 
     class ErroneousClipPositionError : public SerializationError {
     public:
-        ErroneousClipPositionError(const QString &path)
-            : SerializationError(ErroneousClipPosition), m_path(path) {
+        ErroneousClipPositionError(std::string path)
+            : SerializationError(ErroneousClipPosition), m_path(std::move(path)) {
         }
 
-        QString path() const {
+        std::string path() const {
             return m_path;
         }
 
     private:
-        QString m_path;
+        std::string m_path;
     };
 
     class SafeRangeLimitExceededError : public SerializationError {
     public:
-        SafeRangeLimitExceededError(const QString &path)
+        SafeRangeLimitExceededError(const std::string &path)
             : SerializationError(SafeRangeLimitExceeded), m_path(path) {
         }
 
-        QString path() const {
+        std::string path() const {
             return m_path;
         }
 
     private:
-        QString m_path;
+        std::string m_path;
     };
 
-    class SerializationErrorList : public QList<SerializationErrorRef> {
+    class SerializationErrorList : public std::vector<SerializationErrorRef> {
     public:
-        using QList::QList;
+        using std::vector<SerializationErrorRef>::vector;
 
         template<typename T, typename... Args>
         void addError(Args &&... args) {
-            auto s = QSharedPointer<T>::create(std::forward<Args>(args)...);
-            append(s);
+            auto s = std::make_shared<T>(std::forward<Args>(args)...);
+            push_back(s);
             m_containsFatal = m_containsFatal || s->isFatal();
             m_containsError = m_containsError || s->isError();
             m_containsWarning = m_containsWarning || s->isWarning();

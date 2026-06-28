@@ -1,22 +1,23 @@
 #ifndef OPENDSPX_MODEL_PARAMCURVEFREE_H
 #define OPENDSPX_MODEL_PARAMCURVEFREE_H
 
-#include <QList>
+#include <vector>
+#include <utility>
 
 #include <opendspx/paramcurve.h>
 
-namespace QDspx {
+namespace opendspx {
 
     struct ParamCurveFree : ParamCurve {
-        ParamCurveFree(int start = 0, int step = 5, const QList<int> &values = {})
-            : ParamCurve(Free, start), step(step), values(values) {
+        ParamCurveFree(int start = 0, int step = 5, std::vector<int> values = {})
+            : ParamCurve(Free, start), step(step), values(std::move(values)) {
         }
 
         int step;
-        QList<int> values;
+        std::vector<int> values;
     };
     
-    using ParamCurveFreeRef = QSharedPointer<ParamCurveFree>;
+    using ParamCurveFreeRef = std::shared_ptr<ParamCurveFree>;
 
 }
 

@@ -1,13 +1,13 @@
 #ifndef OPENDSPX_MODEL_LABEL_H
 #define OPENDSPX_MODEL_LABEL_H
 
-#include <QString>
+#include <string>
 
-namespace QDspx {
+namespace opendspx {
 
     struct Label {
         int pos{0};
-        QString text;
+        std::string text;
     };
 
 }

@@ -1,7 +1,10 @@
+#include <iostream>
+#include <sstream>
+
 #include <opendspx/model.h>
 #include <opendspxserializer/serializer.h>
 
-using namespace QDspx;
+using namespace opendspx;
 
 const auto data = R"(
 {
@@ -60,7 +63,7 @@ const auto data = R"(
                         "type": "singing",
                         "name": "Verse 1 Vocal",
                         "time": {
-                            "start": 0,
+                            "pos": 0,
                             "length": 7680,
                             "clipStart": 0,
                             "clipLen": 7680
@@ -304,12 +307,7 @@ const auto data = R"(
                                 "transform": []
                             }
                         },
-                        "sources": {
-                            "singer": {
-                                "name": "Default Singer",
-                                "version": "1.0"
-                            }
-                        },
+                        "sources": null,
                         "workspace": {}
                     }
                 ],
@@ -329,7 +327,7 @@ const auto data = R"(
                         "name": "Background Music",
                         "path": "assets/background.wav",
                         "time": {
-                            "start": 0,
+                            "pos": 0,
                             "length": 15360,
                             "clipStart": 0,
                             "clipLen": 15360
@@ -361,9 +359,13 @@ const auto data = R"(
 
 int main() {
     SerializationErrorList errors;
-    auto model = Serializer::deserialize(data, errors);
-    qDebug() << errors.size();
-    auto data1 = Serializer::serialize(model, errors);
-    qDebug().noquote() << QJsonDocument::fromJson(data1).toJson(QJsonDocument::Indented);
+    std::stringstream in(data, std::ios::in);
+    auto model = Serializer::deserialize(in, errors);
+    std::cerr << errors.size() << std::endl;
+    std::stringstream out;
+    Serializer::serialize(out, model, errors, Serializer::FailFast | Serializer::CheckError, true);
+    for (auto ch : out.str()) {
+        std::cout << std::setbase(16) << std::setfill('0') << std::setw(2) << static_cast<int>(static_cast<std::uint8_t>(ch)) << " ";
+    }
     return 0;
 }

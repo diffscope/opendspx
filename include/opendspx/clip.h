@@ -1,33 +1,34 @@
 #ifndef OPENDSPX_MODEL_CLIP_H
 #define OPENDSPX_MODEL_CLIP_H
 
-#include <QSharedPointer>
-#include <QString>
+#include <memory>
+#include <string>
+#include <utility>
 
 #include <opendspx/buscontrol.h>
 #include <opendspx/cliptime.h>
 #include <opendspx/workspace.h>
 
-namespace QDspx {
+namespace opendspx {
 
     struct Clip {
-        enum Type {
+        enum class Type {
             Audio,
             Singing,
         };
         Type type;
-        QString name;
+        std::string name;
         BusControl control;
         ClipTime time;
         Workspace workspace;
 
     protected:
-        Clip(Type type, const QString &name = {}, const BusControl &control = {}, const ClipTime &time = {}, const Workspace &workspace = {})
-            : type(type), name(name), control(control), time(time), workspace(workspace) {
+        Clip(Type type, std::string name = {}, const BusControl &control = {}, const ClipTime &time = {}, Workspace workspace = {})
+            : type(type), name(std::move(name)), control(control), time(time), workspace(std::move(workspace)) {
         }
     };
 
-    using ClipRef = QSharedPointer<Clip>;
+    using ClipRef = std::shared_ptr<Clip>;
 
 }
 

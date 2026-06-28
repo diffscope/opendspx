@@ -1,7 +1,7 @@
 #ifndef OPENDSPX_MODEL_BUSCONTROL_H
 #define OPENDSPX_MODEL_BUSCONTROL_H
 
-namespace QDspx {
+namespace opendspx {
 
     struct BusControl {
         double gain{0.0};

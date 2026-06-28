@@ -1,8 +1,8 @@
 #ifndef OPENDSPX_MODEL_TRACK_H
 #define OPENDSPX_MODEL_TRACK_H
 
-#include <QList>
-#include <QString>
+#include <vector>
+#include <string>
 
 #include <opendspx/audioclip.h>
 #include <opendspx/clip.h>
@@ -10,12 +10,12 @@
 #include <opendspx/trackcontrol.h>
 #include <opendspx/workspace.h>
 
-namespace QDspx {
+namespace opendspx {
 
     struct Track {
-        QString name;
+        std::string name;
         TrackControl control;
-        QList<ClipRef> clips;
+        std::vector<ClipRef> clips;
         Workspace workspace;
     };
 

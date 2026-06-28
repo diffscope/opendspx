@@ -1,13 +1,13 @@
 #ifndef OPENDSPX_MODEL_PHONEME_H
 #define OPENDSPX_MODEL_PHONEME_H
 
-#include <QString>
+#include <string>
 
-namespace QDspx {
+namespace opendspx {
 
     struct Phoneme {
-        QString language;
-        QString token;
+        std::string language;
+        std::string token;
         int start{0};
         bool onset{false};
     };

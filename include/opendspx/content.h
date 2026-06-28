@@ -1,7 +1,7 @@
 #ifndef OPENDSPX_MODEL_CONTENT_H
 #define OPENDSPX_MODEL_CONTENT_H
 
-#include <QList>
+#include <vector>
 
 #include <opendspx/global.h>
 #include <opendspx/master.h>
@@ -9,13 +9,13 @@
 #include <opendspx/track.h>
 #include <opendspx/workspace.h>
 
-namespace QDspx{
+namespace opendspx{
 
     struct Content {
         Global global;
         Master master;
         Timeline timeline;
-        QList<Track> tracks;
+        std::vector<Track> tracks;
         Workspace workspace;
     };
 

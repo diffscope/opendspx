@@ -3,13 +3,13 @@
 
 #include <opendspx/content.h>
 
-namespace QDspx {
+namespace opendspx {
 
     struct Model {
-        enum Version {
+        enum class Version {
             V1,
         };
-        Version version{V1};
+        Version version{Version::V1};
         Content content;
     };
 

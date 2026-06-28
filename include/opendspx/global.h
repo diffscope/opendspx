@@ -1,16 +1,16 @@
 #ifndef OPENDSPX_MODEL_GLOBAL_H
 #define OPENDSPX_MODEL_GLOBAL_H
 
-#include <QString>
+#include <string>
 
-namespace QDspx {
+namespace opendspx {
 
     struct Global {
-        QString author;
-        QString name;
+        std::string author;
+        std::string name;
         int centShift{0};
-        QString editorId;
-        QString editorName;
+        std::string editorId;
+        std::string editorName;
     };
 
 }

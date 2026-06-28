@@ -1,11 +1,13 @@
 #ifndef OPENDSPX_CONVERTER_MIDICONVERTER_H
 #define OPENDSPX_CONVERTER_MIDICONVERTER_H
 
+#include <iosfwd>
 #include <functional>
+#include <string>
 
 #include <opendspxconverter/opendspxconverterglobal.h>
 
-namespace QDspx {
+namespace opendspx {
 
     struct Model;
     class MidiIntermediateData;
@@ -22,19 +24,20 @@ namespace QDspx {
         struct ConvertMidiToIntermediateOption {
             bool separateChannels = true;
         };
-        static MidiIntermediateData convertMidiToIntermediate(const QByteArray &midiData, Error &error, ConvertMidiToIntermediateOption option = {true});
+        static MidiIntermediateData convertMidiToIntermediate(std::istream &in, Error &error, ConvertMidiToIntermediateOption option = {true});
 
         static Model convertIntermediateToDspx(const MidiIntermediateData &midiData, bool *ok = nullptr);
-        static Model convertIntermediateToDspx(const MidiIntermediateData &midiData, const std::function<QString(const QByteArray &)> &decodeText, bool *ok = nullptr);
+
+        static Model convertIntermediateToDspx(const MidiIntermediateData &midiData, const std::function<std::string(const std::string &)> &decodeText, bool *ok = nullptr);
 
         struct ConvertDspxToIntermediateOption {
             int resolution = 480;
             bool separateClips = false;
         };
         static MidiIntermediateData convertDspxToIntermediate(const Model &model, ConvertDspxToIntermediateOption option = {480, false});
-        static MidiIntermediateData convertDspxToIntermediate(const Model &model, const std::function<QByteArray(const QString &)> &encodeText, ConvertDspxToIntermediateOption option = {480, false});
+        static MidiIntermediateData convertDspxToIntermediate(const Model &model, const std::function<std::string(const std::string &)> &encodeText, ConvertDspxToIntermediateOption option = {480, false});
 
-        static QByteArray convertIntermediateToMidi(const MidiIntermediateData &midiData);
+        static void convertIntermediateToMidi(std::ostream &out, const MidiIntermediateData &midiData);
 
     };
 

@@ -3,7 +3,7 @@
 
 #include <opendspx/buscontrol.h>
 
-namespace QDspx{
+namespace opendspx{
 
     struct Master {
         BusControl control;

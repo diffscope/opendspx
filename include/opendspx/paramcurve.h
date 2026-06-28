@@ -1,9 +1,9 @@
 #ifndef OPENDSPX_MODEL_PARAMCURVE_H
 #define OPENDSPX_MODEL_PARAMCURVE_H
 
-#include <QSharedPointer>
+#include <memory>
 
-namespace QDspx {
+namespace opendspx {
 
     struct ParamCurve {
         enum Type {
@@ -19,7 +19,7 @@ namespace QDspx {
         }
     };
 
-    using ParamCurveRef = QSharedPointer<ParamCurve>;
+    using ParamCurveRef = std::shared_ptr<ParamCurve>;
 
 }
 

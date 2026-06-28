@@ -1,13 +1,21 @@
 #ifndef OPENDSPX_MODEL_SOURCES_H
 #define OPENDSPX_MODEL_SOURCES_H
 
-#include <QMap>
-#include <QJsonObject>
-#include <QString>
+#include <string>
+#include <vector>
 
-namespace QDspx {
+#include <opendspx/dynamicmixinganchor.h>
+#include <opendspx/singer.h>
+#include <opendspx/singlesinger.h>
+#include <opendspx/mixedsinger.h>
 
-    using Sources = QMap<QString, QJsonObject>;
+namespace opendspx {
+
+    struct Sources {
+        std::string category;
+        std::vector<DynamicMixingAnchor> mix;
+        std::vector<SingerRef> singers;
+    };
 
 }
 

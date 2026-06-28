@@ -1,27 +1,25 @@
 #include "midi/midiconverter.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <ranges>
 #include <deque>
 #include <map>
-#include <sstream>
 #include <vector>
 #include <utility>
-#include <istream>
 
 #include <wolf-midi/MidiFile.h>
 
 #include <opendspx/model.h>
 #include <opendspxconverter/midi/midiintermediatedata.h>
 
-namespace QDspx {
+namespace opendspx {
 
     constexpr int kDspxTicksPerQuarter = 480;
 
-    MidiIntermediateData MidiConverter::convertMidiToIntermediate(const QByteArray &midiData, Error &error, ConvertMidiToIntermediateOption option) {
+    MidiIntermediateData MidiConverter::convertMidiToIntermediate(std::istream &in, Error &error, ConvertMidiToIntermediateOption option) {
         error = Error::NoError;
 
-        std::istringstream in(std::string(midiData.constData(), midiData.size()), std::ios::binary);
         Midi::MidiFile midiFile;
         if (!midiFile.load(in)) {
             error = Error::InvalidMidiData;
@@ -42,20 +40,20 @@ namespace QDspx {
 
         midiFile.sort();
 
-        QList<MidiIntermediateData::Tempo> tempos;
-        QList<MidiIntermediateData::TimeSignature> timeSignatures;
-        QList<MidiIntermediateData::Marker> markers;
-        QList<MidiIntermediateData::Track> tracks;
+        std::vector<MidiIntermediateData::Tempo> tempos;
+        std::vector<MidiIntermediateData::TimeSignature> timeSignatures;
+        std::vector<MidiIntermediateData::Marker> markers;
+        std::vector<MidiIntermediateData::Track> tracks;
 
         const bool separateChannels = option.separateChannels;
 
         for (int trackId : midiFile.tracks()) {
             const auto events = midiFile.eventsForTrack(trackId);
-            QByteArray trackTitle;
+            std::string trackTitle;
 
             struct LyricEvent {
                 int tick;
-                QByteArray text;
+                std::string text;
             };
             std::vector<LyricEvent> lyricEvents;
 
@@ -68,14 +66,14 @@ namespace QDspx {
                 const int scaledTick = event->tick();
                 switch (event->number()) {
                     case Midi::MidiEvent::TrackName: {
-                        if (trackTitle.isEmpty()) {
+                        if (trackTitle.empty()) {
                             const auto data = event->data();
-                            trackTitle = QByteArray(data.data(), static_cast<int>(data.size()));
+                            trackTitle = std::string(data.data(), static_cast<int>(data.size()));
                         }
                         break;
                     }
                     case Midi::MidiEvent::Tempo: {
-                        tempos.append({scaledTick, static_cast<double>(event->tempo())});
+                        tempos.emplace_back(scaledTick, static_cast<double>(event->tempo()));
                         break;
                     }
                     case Midi::MidiEvent::TimeSignature: {
@@ -83,18 +81,18 @@ namespace QDspx {
                         if (data.size() >= 2) {
                             const int numerator = static_cast<unsigned char>(data[0]);
                             const int denominator = 1 << static_cast<unsigned char>(data[1]);
-                            timeSignatures.append({scaledTick, numerator, denominator});
+                            timeSignatures.emplace_back(scaledTick, numerator, denominator);
                         }
                         break;
                     }
                     case Midi::MidiEvent::Marker: {
                         const auto data = event->data();
-                        markers.append({scaledTick, QByteArray(data.data(), static_cast<int>(data.size()))});
+                        markers.emplace_back(scaledTick, std::string(data.data(), static_cast<int>(data.size())));
                         break;
                     }
                     case Midi::MidiEvent::Lyric: {
                         const auto data = event->data();
-                        lyricEvents.push_back({scaledTick, QByteArray(data.data(), static_cast<int>(data.size()))});
+                        lyricEvents.emplace_back(scaledTick, std::string(data.data(), static_cast<int>(data.size())));
                         break;
                     }
                     default:
@@ -104,13 +102,13 @@ namespace QDspx {
 
             struct PendingNote {
                 int startTick;
-                QByteArray lyric;
+                std::string lyric;
             };
 
             // channel -> key -> FIFO notes (to support overlapping notes on same key)
             std::map<int, std::map<int, std::deque<PendingNote>>> pendingNotes;
-            QList<MidiIntermediateData::Note> combinedNotes;
-            std::map<int, QList<MidiIntermediateData::Note>> channelNotes; // channel -> notes
+            std::vector<MidiIntermediateData::Note> combinedNotes;
+            std::map<int, std::vector<MidiIntermediateData::Note>> channelNotes; // channel -> notes
 
             std::size_t lyricIndex = 0;
 
@@ -152,9 +150,9 @@ namespace QDspx {
                     if (length >= 0) {
                         MidiIntermediateData::Note note{pending.startTick, length, key, pending.lyric};
                         if (separateChannels) {
-                            channelNotes[channel].append(note);
+                            channelNotes[channel].push_back(note);
                         } else {
-                            combinedNotes.append(note);
+                            combinedNotes.push_back(note);
                         }
                     }
 
@@ -167,7 +165,7 @@ namespace QDspx {
                     continue;
                 }
 
-                QByteArray lyric;
+                std::string lyric;
                 if (lyricIndex < lyricEvents.size() && lyricEvents[lyricIndex].tick <= scaledTick) {
                     lyric = lyricEvents[lyricIndex].text;
                     ++lyricIndex;
@@ -178,10 +176,10 @@ namespace QDspx {
 
             if (separateChannels) {
                 for (auto &channelPair : channelNotes) {
-                    tracks.append({trackTitle, channelPair.second, channelPair.first, midiFile.trackEndTick(trackId)});
+                    tracks.emplace_back(trackTitle, channelPair.second, channelPair.first, midiFile.trackEndTick(trackId));
                 }
             } else {
-                tracks.append({trackTitle, combinedNotes, -1, midiFile.trackEndTick(trackId)});
+                tracks.emplace_back(trackTitle, combinedNotes, -1, midiFile.trackEndTick(trackId));
             }
         }
 
@@ -189,10 +187,10 @@ namespace QDspx {
     }
 
     Model MidiConverter::convertIntermediateToDspx(const MidiIntermediateData &midiData, bool *ok) {
-        return convertIntermediateToDspx(midiData, [](const QByteArray &data) { return QString::fromUtf8(data); }, ok);
+        return convertIntermediateToDspx(midiData, [](const std::string &data) { return data; }, ok);
     }
 
-    Model MidiConverter::convertIntermediateToDspx(const MidiIntermediateData &midiData, const std::function<QString(const QByteArray &)> &decodeText, bool *ok) {
+    Model MidiConverter::convertIntermediateToDspx(const MidiIntermediateData &midiData, const std::function<std::string(const std::string &)> &decodeText, bool *ok) {
         if (ok) {
             *ok = false;
         }
@@ -207,21 +205,21 @@ namespace QDspx {
         }
 
         const auto scaleTick = [srcResolution](int tick) -> int {
-            return static_cast<int>(static_cast<qint64>(tick) * kDspxTicksPerQuarter / srcResolution);
+            return static_cast<int>(static_cast<std::int64_t>(tick) * kDspxTicksPerQuarter / srcResolution);
         };
 
         Model model;
 
-        QList<Tempo> tempos;
+        std::vector<Tempo> tempos;
         const auto midiTempos = midiData.tempos();
         const bool hasInitialTempo = std::ranges::any_of(midiTempos, [](const auto &tempo) {
             return tempo.tick == 0;
         });
         if (!hasInitialTempo) {
-            tempos.append({0, 120.0});
+            tempos.emplace_back(0, 120.0);
         }
         for (const auto &tempo : midiTempos) {
-            tempos.append({scaleTick(tempo.tick), tempo.tempo});
+            tempos.emplace_back(scaleTick(tempo.tick), tempo.tempo);
         }
 
         auto midiTimeSignatures = midiData.timeSignatures();
@@ -229,39 +227,39 @@ namespace QDspx {
             return sig.tick == 0;
         });
         if (!hasInitialTimeSignature) {
-            midiTimeSignatures.prepend({0, 4, 4});
+            midiTimeSignatures.insert(midiTimeSignatures.begin(), {0, 4, 4});
         }
         std::ranges::stable_sort(midiTimeSignatures, [](const auto &lhs, const auto &rhs) {
             return lhs.tick < rhs.tick;
         });
 
-        QList<TimeSignature> timeSignatures;
-        if (!midiTimeSignatures.isEmpty()) {
+        std::vector<TimeSignature> timeSignatures;
+        if (!midiTimeSignatures.empty()) {
             const auto &firstSignature = midiTimeSignatures.front();
-            timeSignatures.append({0, firstSignature.numerator, firstSignature.denominator});
+            timeSignatures.emplace_back(0, firstSignature.numerator, firstSignature.denominator);
 
             int currentNumerator = firstSignature.numerator;
             int currentDenominator = firstSignature.denominator;
-            qint64 currentMeasureStartTick = 0;
+            std::int64_t currentMeasureStartTick = 0;
             int currentMeasureIndex = 0;
 
-            const auto ticksPerMeasure = [srcResolution](int numerator, int denominator) -> qint64 {
-                return static_cast<qint64>(numerator) * srcResolution * 4 / denominator;
+            const auto ticksPerMeasure = [srcResolution](int numerator, int denominator) -> std::int64_t {
+                return static_cast<std::int64_t>(numerator) * srcResolution * 4 / denominator;
             };
 
             for (int i = 1; i < midiTimeSignatures.size(); ++i) {
                 const auto &signature = midiTimeSignatures.at(i);
-                const qint64 measureTicks = ticksPerMeasure(currentNumerator, currentDenominator);
+                const std::int64_t measureTicks = ticksPerMeasure(currentNumerator, currentDenominator);
                 if (measureTicks <= 0) {
                     continue;
                 }
 
-                qint64 deltaTicks = static_cast<qint64>(signature.tick) - currentMeasureStartTick;
+                std::int64_t deltaTicks = static_cast<std::int64_t>(signature.tick) - currentMeasureStartTick;
                 if (deltaTicks < 0) {
                     deltaTicks = 0;
                 }
 
-                qint64 measuresForward = deltaTicks / measureTicks;
+                std::int64_t measuresForward = deltaTicks / measureTicks;
                 if (deltaTicks % measureTicks != 0) {
                     ++measuresForward;
                 }
@@ -269,11 +267,11 @@ namespace QDspx {
                 currentMeasureIndex += static_cast<int>(measuresForward);
                 currentMeasureStartTick += measuresForward * measureTicks;
 
-                if (!timeSignatures.isEmpty() && timeSignatures.back().index == currentMeasureIndex) {
+                if (!timeSignatures.empty() && timeSignatures.back().index == currentMeasureIndex) {
                     timeSignatures.back().numerator = signature.numerator;
                     timeSignatures.back().denominator = signature.denominator;
                 } else {
-                    timeSignatures.append({currentMeasureIndex, signature.numerator, signature.denominator});
+                    timeSignatures.emplace_back(currentMeasureIndex, signature.numerator, signature.denominator);
                 }
 
                 currentNumerator = signature.numerator;
@@ -281,9 +279,9 @@ namespace QDspx {
             }
         }
 
-        QList<Label> labels;
+        std::vector<Label> labels;
         for (const auto &marker : midiData.markers()) {
-            labels.append({scaleTick(marker.tick), decodeText(marker.text)});
+            labels.emplace_back(scaleTick(marker.tick), decodeText(marker.text));
         }
 
         model.content.timeline.tempos = std::move(tempos);
@@ -294,7 +292,7 @@ namespace QDspx {
             Track dspxTrack;
             dspxTrack.name = decodeText(track.title);
 
-            QList<Note> notes;
+            std::vector<Note> notes;
             notes.reserve(track.notes.size());
             for (const auto &note : track.notes) {
                 Note dspxNote;
@@ -302,16 +300,16 @@ namespace QDspx {
                 dspxNote.length = scaleTick(note.length);
                 dspxNote.keyNum = note.key;
                 dspxNote.lyric = decodeText(note.lyric);
-                notes.append(std::move(dspxNote));
+                notes.push_back(std::move(dspxNote));
             }
 
-            auto clip = QSharedPointer<SingingClip>::create();
+            auto clip = std::make_shared<SingingClip>();
             clip->name = dspxTrack.name;
             clip->notes = std::move(notes);
             clip->time.clipLen = scaleTick(track.endTick);
 
-            dspxTrack.clips.append(clip);
-            model.content.tracks.append(dspxTrack);
+            dspxTrack.clips.push_back(clip);
+            model.content.tracks.push_back(dspxTrack);
         }
 
         if (ok) {
@@ -320,28 +318,28 @@ namespace QDspx {
         return model;
     }
     MidiIntermediateData MidiConverter::convertDspxToIntermediate(const Model &model, ConvertDspxToIntermediateOption option) {
-        return convertDspxToIntermediate(model, [](const QString &text) { return text.toUtf8(); }, option);
+        return convertDspxToIntermediate(model, [](const std::string &text) { return text; }, option);
     }
 
-    MidiIntermediateData MidiConverter::convertDspxToIntermediate(const Model &model, const std::function<QByteArray(const QString &)> &encodeText, ConvertDspxToIntermediateOption option) {
+    MidiIntermediateData MidiConverter::convertDspxToIntermediate(const Model &model, const std::function<std::string(const std::string &)> &encodeText, ConvertDspxToIntermediateOption option) {
         if (option.resolution <= 0) {
             return {};
         }
 
-        const auto scaleTick = [resolution = option.resolution](qint64 tick) -> int {
+        const auto scaleTick = [resolution = option.resolution](std::int64_t tick) -> int {
             return static_cast<int>(tick * resolution / kDspxTicksPerQuarter);
         };
 
-        QList<MidiIntermediateData::Tempo> tempos;
+        std::vector<MidiIntermediateData::Tempo> tempos;
         const auto &timeline = model.content.timeline;
         const bool hasInitialTempo = std::ranges::any_of(timeline.tempos, [](const auto &tempo) {
             return tempo.pos == 0;
         });
         if (!hasInitialTempo) {
-            tempos.append({0, 120.0});
+            tempos.emplace_back(0, 120.0);
         }
         for (const auto &tempo : timeline.tempos) {
-            tempos.append({scaleTick(tempo.pos), tempo.value});
+            tempos.emplace_back(scaleTick(tempo.pos), tempo.value);
         }
 
         auto timeSignaturesSrc = timeline.timeSignatures;
@@ -349,36 +347,36 @@ namespace QDspx {
             return signature.index == 0;
         });
         if (!hasInitialTimeSignature) {
-            timeSignaturesSrc.prepend({0, 4, 4});
+            timeSignaturesSrc.insert(timeSignaturesSrc.begin(), {0, 4, 4});
         }
         std::ranges::stable_sort(timeSignaturesSrc, [](const auto &lhs, const auto &rhs) {
             return lhs.index < rhs.index;
         });
 
-        QList<MidiIntermediateData::TimeSignature> timeSignatures;
-        if (!timeSignaturesSrc.isEmpty()) {
+        std::vector<MidiIntermediateData::TimeSignature> timeSignatures;
+        if (!timeSignaturesSrc.empty()) {
             int currentNumerator = 4;
             int currentDenominator = 4;
             int currentIndex = 0;
-            qint64 currentTick = 0;
+            std::int64_t currentTick = 0;
 
-            const auto ticksPerMeasure = [resolution = option.resolution](int numerator, int denominator) -> qint64 {
-                return static_cast<qint64>(numerator) * resolution * 4 / denominator;
+            const auto ticksPerMeasure = [resolution = option.resolution](int numerator, int denominator) -> std::int64_t {
+                return static_cast<std::int64_t>(numerator) * resolution * 4 / denominator;
             };
 
             for (const auto &signature : timeSignaturesSrc) {
-                const qint64 measureTicks = ticksPerMeasure(currentNumerator, currentDenominator);
+                const std::int64_t measureTicks = ticksPerMeasure(currentNumerator, currentDenominator);
                 if (measureTicks <= 0) {
                     continue;
                 }
 
-                qint64 measuresForward = static_cast<qint64>(signature.index) - currentIndex;
+                std::int64_t measuresForward = static_cast<std::int64_t>(signature.index) - currentIndex;
                 if (measuresForward < 0) {
                     measuresForward = 0;
                 }
 
-                const qint64 signatureTick = currentTick + measuresForward * measureTicks;
-                timeSignatures.append({scaleTick(signatureTick), signature.numerator, signature.denominator});
+                const std::int64_t signatureTick = currentTick + measuresForward * measureTicks;
+                timeSignatures.emplace_back(scaleTick(signatureTick), signature.numerator, signature.denominator);
 
                 currentIndex = signature.index;
                 currentTick = signatureTick;
@@ -387,73 +385,76 @@ namespace QDspx {
             }
         }
 
-        QList<MidiIntermediateData::Marker> markers;
+        std::vector<MidiIntermediateData::Marker> markers;
         for (const auto &label : timeline.labels) {
-            markers.append({scaleTick(label.pos), encodeText(label.text)});
+            markers.emplace_back(scaleTick(label.pos), encodeText(label.text));
         }
 
-        QList<MidiIntermediateData::Track> tracks;
+        std::vector<MidiIntermediateData::Track> tracks;
         for (const auto &track : model.content.tracks) {
-            QList<SingingClip> singingClips;
+            std::vector<SingingClip> singingClips;
             for (const auto &clipRef : track.clips) {
-                if (!clipRef || clipRef->type != Clip::Singing) {
+                if (!clipRef || clipRef->type != Clip::Type::Singing) {
                     continue;
                 }
-                const auto singingClip = qSharedPointerCast<SingingClip>(clipRef);
+                const auto singingClip = std::static_pointer_cast<SingingClip>(clipRef);
                 if (!singingClip) {
                     continue;
                 }
-                singingClips.append(*singingClip);
+                singingClips.push_back(*singingClip);
             }
 
             if (option.separateClips) {
                 for (const auto &clip : singingClips) {
-                    QList<MidiIntermediateData::Note> notes;
-                    qint64 trackEndTick = 0;
+                    std::vector<MidiIntermediateData::Note> notes;
+                    std::int64_t trackEndTick = 0;
+
+                    const std::int64_t start = static_cast<std::int64_t>(clip.time.pos) - clip.time.clipStart;
 
                     for (const auto &note : clip.notes) {
-                        const qint64 noteStart = static_cast<qint64>(clip.time.start) + note.pos;
-                        const qint64 noteEnd = noteStart + note.length;
-                        notes.append({scaleTick(noteStart), scaleTick(note.length), note.keyNum, encodeText(note.lyric)});
+                        const std::int64_t noteStart = start + note.pos;
+                        const std::int64_t noteEnd = noteStart + note.length;
+                        notes.emplace_back(scaleTick(noteStart), scaleTick(note.length), note.keyNum, encodeText(note.lyric));
                         trackEndTick = std::max(trackEndTick, noteEnd);
                     }
 
-                    trackEndTick = std::max(trackEndTick, static_cast<qint64>(clip.time.start) + clip.time.clipLen);
+                    trackEndTick = std::max(trackEndTick, start + clip.time.clipLen);
 
-                    QString name = track.name;
-                    if (!clip.name.isEmpty()) {
-                        if (!name.isEmpty()) {
-                            name.append(' ');
+                    std::string name = track.name;
+                    if (!clip.name.empty()) {
+                        if (!name.empty()) {
+                            name.append({' '});
                         }
                         name.append(clip.name);
                     }
 
-                    tracks.append({encodeText(name), notes, -1, scaleTick(trackEndTick)});
+                    tracks.emplace_back(encodeText(name), notes, -1, scaleTick(trackEndTick));
                 }
             } else {
-                QList<MidiIntermediateData::Note> notes;
-                qint64 trackEndTick = 0;
+                std::vector<MidiIntermediateData::Note> notes;
+                std::int64_t trackEndTick = 0;
 
                 for (const auto &clip : singingClips) {
+                    const std::int64_t start = static_cast<std::int64_t>(clip.time.pos) - clip.time.clipStart;
                     for (const auto &note : clip.notes) {
-                        const qint64 noteStart = static_cast<qint64>(clip.time.start) + note.pos;
-                        const qint64 noteEnd = noteStart + note.length;
-                        notes.append({scaleTick(noteStart), scaleTick(note.length), note.keyNum, encodeText(note.lyric)});
+                        const std::int64_t noteStart = start + note.pos;
+                        const std::int64_t noteEnd = noteStart + note.length;
+                        notes.emplace_back(scaleTick(noteStart), scaleTick(note.length), note.keyNum, encodeText(note.lyric));
                         trackEndTick = std::max(trackEndTick, noteEnd);
                     }
-                    trackEndTick = std::max(trackEndTick, static_cast<qint64>(clip.time.start) + clip.time.clipLen);
+                    trackEndTick = std::max(trackEndTick, start + clip.time.clipLen);
                 }
 
-                tracks.append({encodeText(track.name), notes, -1, scaleTick(trackEndTick)});
+                tracks.emplace_back(encodeText(track.name), notes, -1, scaleTick(trackEndTick));
             }
         }
 
         return {option.resolution, tempos, timeSignatures, markers, tracks};
     }
 
-    QByteArray MidiConverter::convertIntermediateToMidi(const MidiIntermediateData &midiData) {
+    void MidiConverter::convertIntermediateToMidi(std::ostream &out, const MidiIntermediateData &midiData) {
         if (!midiData.isValid() || midiData.resolution() <= 0) {
-            return {};
+            return;
         }
 
         Midi::MidiFile midiFile;
@@ -477,7 +478,7 @@ namespace QDspx {
         for (const auto &track : midiData.tracks()) {
             const int trackId = midiFile.createTrack();
 
-            if (!track.title.isEmpty()) {
+            if (!track.title.empty()) {
                 midiFile.createMetaEvent(trackId, 0, Midi::MidiEvent::TrackName, std::vector<char>(track.title.begin(), track.title.end()));
             }
 
@@ -486,7 +487,7 @@ namespace QDspx {
             for (const auto &note : track.notes) {
                 const int noteOffTick = note.noteOnTick + note.length;
 
-                if (!note.lyric.isEmpty()) {
+                if (!note.lyric.empty()) {
                     midiFile.createLyricEvent(trackId, note.noteOnTick, std::vector<char>(note.lyric.begin(), note.lyric.end()));
                 }
 
@@ -497,13 +498,7 @@ namespace QDspx {
 
         midiFile.sort();
 
-        std::ostringstream out(std::ios::binary);
-        if (!midiFile.save(out)) {
-            return {};
-        }
-
-        const std::string str = out.str();
-        return QByteArray(str.data(), static_cast<int>(str.size()));
+        midiFile.save(out);
     }
 
 }

@@ -1,7 +1,7 @@
 #ifndef OPENDSPX_MODEL_TEMPO_H
 #define OPENDSPX_MODEL_TEMPO_H
 
-namespace QDspx {
+namespace opendspx {
 
     struct Tempo {
         int pos{0};
