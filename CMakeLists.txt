@@ -8,6 +8,7 @@ project(opendspx VERSION 0.0.1.5 LANGUAGES C CXX)
 option(OPENDSPX_BUILD_STATIC "Build static library" OFF)
 option(OPENDSPX_BUILD_TESTS "Build test cases" OFF)
 option(OPENDSPX_BUILD_INTERPOLATOR "Build interpolator" ON)
+option(OPENDSPX_BUILD_VIBRATO "Build vibrato" ON)
 option(OPENDSPX_BUILD_SERIALIZER "Build serializer" ON)
 option(OPENDSPX_BUILD_CONVERTER "Build converter" ON)
 option(OPENDSPX_INSTALL "Install library" ON)
@@ -60,6 +61,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE on)
 
 set(OPENDSPX_MODEL_TARGET ${PROJECT_NAME}model)
 set(OPENDSPX_INTERPOLATOR_TARGET ${PROJECT_NAME}interpolator)
+set(OPENDSPX_VIBRATO_TARGET ${PROJECT_NAME}vibrato)
 set(OPENDSPX_SERIALIZER_TARGET ${PROJECT_NAME}serializer)
 set(OPENDSPX_CONVERTER_TARGET ${PROJECT_NAME}converter)
 set(CURRENT_YEAR)
@@ -79,6 +81,7 @@ if(TRUE)
     # Add library
     add_library(${OPENDSPX_MODEL_TARGET} INTERFACE)
     add_library(${PROJECT_NAME}::model ALIAS ${OPENDSPX_MODEL_TARGET})
+    set_target_properties(${OPENDSPX_MODEL_TARGET} PROPERTIES EXPORT_NAME model)
 
     # Add features
     target_compile_features(${OPENDSPX_MODEL_TARGET} INTERFACE cxx_std_20 cxx_std_17)
@@ -109,6 +112,7 @@ if(OPENDSPX_BUILD_INTERPOLATOR)
     # Add library
     add_library(${OPENDSPX_INTERPOLATOR_TARGET} INTERFACE)
     add_library(${PROJECT_NAME}::interpolator ALIAS ${OPENDSPX_INTERPOLATOR_TARGET})
+    set_target_properties(${OPENDSPX_INTERPOLATOR_TARGET} PROPERTIES EXPORT_NAME interpolator)
 
     # Add features
     target_compile_features(${OPENDSPX_INTERPOLATOR_TARGET} INTERFACE cxx_std_20 cxx_std_17)
@@ -118,15 +122,43 @@ if(OPENDSPX_BUILD_INTERPOLATOR)
             "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     )
 
-    # Link libraries
-    target_link_libraries(${OPENDSPX_INTERPOLATOR_TARGET} INTERFACE nlohmann_json::nlohmann_json)
-
     if (OPENDSPX_INSTALL)
         target_include_directories(${OPENDSPX_INTERPOLATOR_TARGET} INTERFACE
                 "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
         )
 
         install(TARGETS ${OPENDSPX_INTERPOLATOR_TARGET}
+                EXPORT ${OPENDSPX_INSTALL_NAME}Targets
+                RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" OPTIONAL
+                LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" OPTIONAL
+                ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" OPTIONAL
+        )
+    endif()
+endif()
+
+if(OPENDSPX_BUILD_VIBRATO)
+    # Add library
+    add_library(${OPENDSPX_VIBRATO_TARGET} INTERFACE)
+    add_library(${PROJECT_NAME}::vibrato ALIAS ${OPENDSPX_VIBRATO_TARGET})
+    set_target_properties(${OPENDSPX_VIBRATO_TARGET} PROPERTIES EXPORT_NAME vibrato)
+
+    # Add features
+    target_compile_features(${OPENDSPX_VIBRATO_TARGET} INTERFACE cxx_std_20 cxx_std_17)
+
+    # Include directories
+    target_include_directories(${OPENDSPX_VIBRATO_TARGET} INTERFACE
+            "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    )
+
+    # Link libraries
+    target_link_libraries(${OPENDSPX_VIBRATO_TARGET} INTERFACE ${OPENDSPX_MODEL_TARGET})
+
+    if (OPENDSPX_INSTALL)
+        target_include_directories(${OPENDSPX_VIBRATO_TARGET} INTERFACE
+                "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+        )
+
+        install(TARGETS ${OPENDSPX_VIBRATO_TARGET}
                 EXPORT ${OPENDSPX_INSTALL_NAME}Targets
                 RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" OPTIONAL
                 LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" OPTIONAL
@@ -145,6 +177,7 @@ macro(_opendspx_add_library identifier)
     endif ()
 
     add_library(${PROJECT_NAME}::${identifier} ALIAS ${OPENDSPX_${IDENTIFIER}_TARGET})
+    set_target_properties(${OPENDSPX_${IDENTIFIER}_TARGET} PROPERTIES EXPORT_NAME ${identifier})
 
     # Add sources
     file(GLOB_RECURSE _src include/opendspx${identifier}/*.h src/${identifier}/*.h src/${identifier}/*.cpp)

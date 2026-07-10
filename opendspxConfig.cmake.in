@@ -2,4 +2,15 @@
 
 include(CMakeFindDependencyMacro)
 
+find_dependency(nlohmann_json CONFIG)
+find_dependency(stdcorelib CONFIG)
+
+if(@OPENDSPX_BUILD_SERIALIZER@)
+    find_dependency(zstd CONFIG)
+endif()
+
+if(@OPENDSPX_BUILD_CONVERTER@)
+    find_dependency(wolf-midi CONFIG)
+endif()
+
 include("${CMAKE_CURRENT_LIST_DIR}/opendspxTargets.cmake")
