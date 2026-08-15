@@ -1,11 +1,11 @@
-#ifndef OPENDSPX_SERIALIZATION_DECLARATIVE_P_H
-#define OPENDSPX_SERIALIZATION_DECLARATIVE_P_H
+#ifndef OPENDSPX_SERIALIZER_DECLARATIVE_P_H
+#define OPENDSPX_SERIALIZER_DECLARATIVE_P_H
 
 #include <cassert>
 #include <memory>
 #include <optional>
 
-#include <opendspxserializer/private/helpers_p.h>
+#include <opendspx/serializer/private/helpers_p.h>
 
 namespace opendspx::impl::decl {
 
@@ -59,6 +59,8 @@ namespace opendspx::impl::decl {
                     entity = object;
                     return true;
                 };
+            } else if constexpr (std::is_same_v<T, stdc::JsonObject>) {
+                return fromJsonObjectValueHelper;
             } else if constexpr (std::is_same_v<T, int>) {
                 return fromJsonIntHelperWithConstraint<>;
             } else if constexpr (std::is_same_v<T, double>) {
@@ -102,7 +104,7 @@ namespace opendspx::impl::decl {
         template<typename T_>
         static constexpr auto getToJsonFunc() {
             using T = std::remove_cvref_t<T_>;
-            if constexpr (std::is_same_v<T, stdc::JsonValue>) {
+            if constexpr (std::is_same_v<T, stdc::JsonValue> || std::is_same_v<T, stdc::JsonObject>) {
                 return [](stdc::JsonValue &object, const T &entity, const JsonSerializationContext &) {
                     object = entity;
                     return true;
@@ -377,7 +379,7 @@ namespace opendspx::impl::decl {
             }
             for (const auto &[key, value] : *object) {
                 typename T::mapped_type contentEntity;
-                if (!TrivialOrMappingConvert::getFromJsonFunc<typename T::mapped_type>()(value, contentEntity, context)) {
+                if (!TrivialOrMappingConvert::getFromJsonFunc<typename T::mapped_type>()(value, contentEntity, {context.errors, context.options, context.path + "." + key})) {
                     if (context.options & Serializer::FailFast)
                         return false;
                 }
@@ -395,7 +397,7 @@ namespace opendspx::impl::decl {
             stdc::JsonObject contents;
             for (const auto &[key, value] : entity) {
                 stdc::JsonValue contentJson;
-                if (!TrivialOrMappingConvert::getToJsonFunc<decltype(value)>()(contentJson, value, context)) {
+                if (!TrivialOrMappingConvert::getToJsonFunc<decltype(value)>()(contentJson, value, {context.errors, context.options, context.path + "." + key})) {
                     if (context.options & Serializer::FailFast) {
                         object = std::move(contents);
                         return false;
@@ -413,4 +415,4 @@ namespace opendspx::impl::decl {
 
 }
 
-#endif //OPENDSPX_SERIALIZATION_DECLARATIVE_P_H
+#endif //OPENDSPX_SERIALIZER_DECLARATIVE_P_H

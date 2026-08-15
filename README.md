@@ -17,6 +17,7 @@ Build-time dependencies:
 - `stdcorelib`
 - `zstd` for the serializer module
 - `wolf-midi` for the converter module
+- `boost-test` for the test suite
 
 The project is currently configured for Windows and other CMake-supported platforms.
 
@@ -32,7 +33,7 @@ cmake --build build
 Useful options:
 
 - `OPENDSPX_BUILD_STATIC`: build static libraries instead of shared libraries
-- `OPENDSPX_BUILD_TESTS`: build the test executable
+- `OPENDSPX_BUILD_TESTS`: build the test suite
 - `OPENDSPX_BUILD_INTERPOLATOR`: build the interpolator interface library
 - `OPENDSPX_BUILD_SERIALIZER`: build the serializer library
 - `OPENDSPX_BUILD_CONVERTER`: build the converter library
@@ -59,7 +60,7 @@ The public API provides helpers for:
 Example:
 
 ```cpp
-#include <opendspxinterpolator/interpolator.h>
+#include <opendspx/interpolator/interpolator.h>
 
 using opendspx::Interpolator;
 
@@ -77,7 +78,7 @@ Use `opendspx::Serializer` to convert between `Model` and DSPX data streams.
 ```cpp
 #include <fstream>
 #include <opendspx/model.h>
-#include <opendspxserializer/serializer.h>
+#include <opendspx/serializer/serializer.h>
 
 using namespace opendspx;
 
@@ -100,7 +101,7 @@ Use `opendspx::Converter` to convert between DSPX data and other formats.
 
 ```cpp
 #include <fstream>
-#include <opendspxconverter/midi/midiconverter.h>
+#include <opendspx/converter/midi/midiconverter.h>
 
 using namespace opendspx;
 
@@ -131,12 +132,23 @@ int main() {
 ## Project Structure
 
 - `include/opendspx/`: public model headers
-- `include/opendspxinterpolator/`: interpolator API
-- `include/opendspxserializer/`: serializer API
-- `include/opendspxconverter/`: converter API
+- `include/opendspx/interpolator/`: interpolator API
+- `include/opendspx/serializer/`: serializer API
+- `include/opendspx/converter/`: converter API
 - `src/serializer/`: serializer implementation
 - `src/converter/`: converter implementation, currently focused on MIDI
-- `tests/`: usage tests
+- `tests/auto/`: the regression suite, one directory per module
+
+## Tests
+
+Configure with `-DOPENDSPX_BUILD_TESTS=ON` and point CMake at Boost.Test, then:
+
+```bash
+ctest --test-dir build --output-on-failure --no-tests=error
+```
+
+The whole suite is one binary, so a single case can be run on its own with
+`test_auto --run_test=<suite>/<case>`.
 
 ## License
 

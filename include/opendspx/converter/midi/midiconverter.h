@@ -1,11 +1,11 @@
-#ifndef OPENDSPX_CONVERTER_MIDICONVERTER_H
-#define OPENDSPX_CONVERTER_MIDICONVERTER_H
+#ifndef OPENDSPX_CONVERTER_MIDI_MIDICONVERTER_H
+#define OPENDSPX_CONVERTER_MIDI_MIDICONVERTER_H
 
 #include <iosfwd>
 #include <functional>
 #include <string>
 
-#include <opendspxconverter/opendspxconverterglobal.h>
+#include <opendspx/converter/opendspxconverterglobal.h>
 
 namespace opendspx {
 
@@ -43,4 +43,4 @@ namespace opendspx {
 
 }
 
-#endif //OPENDSPX_CONVERTER_MIDICONVERTER_H
+#endif //OPENDSPX_CONVERTER_MIDI_MIDICONVERTER_H

@@ -10,8 +10,8 @@
 #include <opendspx/mixedsinger.h>
 #include <opendspx/sources.h>
 #include <opendspx/sourcemixingratio.h>
-#include <opendspxserializer/private/helpers_p.h>
-#include <opendspxserializer/serializationerror.h>
+#include <opendspx/serializer/private/helpers_p.h>
+#include <opendspx/serializer/serializationerror.h>
 
 namespace opendspx::impl {
 

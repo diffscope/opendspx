@@ -7,6 +7,8 @@
 #include <utility>
 #include <vector>
 
+#include <stdcorelib/support/json.h>
+
 namespace opendspx {
 
     class SerializationError {
@@ -57,14 +59,30 @@ namespace opendspx {
 
     class JsonParseFailureError : public SerializationError {
     public:
-        explicit JsonParseFailureError(std::string message)
-            : SerializationError(JsonParseFailure), m_message(std::move(message)) {
+        explicit JsonParseFailureError(stdc::JsonParseError error)
+            : SerializationError(JsonParseFailure), m_error(std::move(error)) {
         }
+        stdc::JsonParseError::Code code() const {
+            return m_error.code;
+        }
+        std::size_t offset() const {
+            return m_error.offset;
+        }
+        std::size_t line() const {
+            return m_error.line;
+        }
+        std::size_t column() const {
+            return m_error.column;
+        }
+        // What was wrong, with the line and column in front of it
         std::string message() const {
-            return m_message;
+            return m_error.message();
+        }
+        const stdc::JsonParseError &error() const {
+            return m_error;
         }
     private:
-        std::string m_message;
+        stdc::JsonParseError m_error;
     };
 
     class JsonRootIsNotObjectError : public SerializationError {

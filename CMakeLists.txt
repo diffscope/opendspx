@@ -149,7 +149,7 @@ macro(_opendspx_add_library identifier)
     set_target_properties(${OPENDSPX_${IDENTIFIER}_TARGET} PROPERTIES EXPORT_NAME ${identifier})
 
     # Add sources
-    file(GLOB_RECURSE _src include/opendspx${identifier}/*.h src/${identifier}/*.h src/${identifier}/*.cpp)
+    file(GLOB_RECURSE _src include/opendspx/${identifier}/*.h src/${identifier}/*.h src/${identifier}/*.cpp)
     target_sources(${OPENDSPX_${IDENTIFIER}_TARGET} PRIVATE ${_src})
 
     # Add features
@@ -162,7 +162,7 @@ macro(_opendspx_add_library identifier)
     target_include_directories(${OPENDSPX_${IDENTIFIER}_TARGET} PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     )
-    target_include_directories(${OPENDSPX_${IDENTIFIER}_TARGET} PRIVATE include/opendspx${identifier})
+    target_include_directories(${OPENDSPX_${IDENTIFIER}_TARGET} PRIVATE include/opendspx/${identifier})
 
     target_link_libraries(${OPENDSPX_${IDENTIFIER}_TARGET} PUBLIC ${OPENDSPX_MODEL_TARGET})
     target_link_libraries(${OPENDSPX_${IDENTIFIER}_TARGET} PRIVATE stdcorelib::stdcorelib)
@@ -202,6 +202,7 @@ if (OPENDSPX_BUILD_CONVERTER)
 endif()
 
 if (OPENDSPX_BUILD_TESTS)
+    enable_testing()
     add_subdirectory(tests)
 endif ()
 

@@ -7,7 +7,7 @@
 #include <vector>
 
 #include <opendspx/anchornode.h>
-#include <opendspxinterpolator/interpolator.h>
+#include <opendspx/interpolator/interpolator.h>
 
 namespace opendspx {
 
