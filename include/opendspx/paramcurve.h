@@ -1,5 +1,5 @@
-#ifndef OPENDSPX_MODEL_PARAMCURVE_H
-#define OPENDSPX_MODEL_PARAMCURVE_H
+#ifndef OPENDSPX_PARAMCURVE_H
+#define OPENDSPX_PARAMCURVE_H
 
 #include <memory>
 
@@ -23,4 +23,4 @@ namespace opendspx {
 
 }
 
-#endif //OPENDSPX_MODEL_PARAMCURVE_H
+#endif //OPENDSPX_PARAMCURVE_H

@@ -1,5 +1,5 @@
-#ifndef OPENDSPX_MODEL_TEMPO_H
-#define OPENDSPX_MODEL_TEMPO_H
+#ifndef OPENDSPX_TEMPO_H
+#define OPENDSPX_TEMPO_H
 
 namespace opendspx {
 
@@ -10,4 +10,4 @@ namespace opendspx {
 
 }
 
-#endif //OPENDSPX_MODEL_TEMPO_H
+#endif //OPENDSPX_TEMPO_H

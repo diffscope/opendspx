@@ -1,5 +1,5 @@
-#ifndef OPENDSPX_MODEL_GLOBAL_H
-#define OPENDSPX_MODEL_GLOBAL_H
+#ifndef OPENDSPX_GLOBAL_H
+#define OPENDSPX_GLOBAL_H
 
 #include <string>
 
@@ -15,4 +15,4 @@ namespace opendspx {
 
 }
 
-#endif //OPENDSPX_MODEL_GLOBAL_H
+#endif //OPENDSPX_GLOBAL_H

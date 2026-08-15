@@ -1,5 +1,5 @@
-#ifndef OPENDSPX_MODEL_VIBRATO_H
-#define OPENDSPX_MODEL_VIBRATO_H
+#ifndef OPENDSPX_VIBRATO_H
+#define OPENDSPX_VIBRATO_H
 
 #include <opendspx/vibratopoints.h>
 
@@ -17,4 +17,4 @@ namespace opendspx {
 
 }
 
-#endif //OPENDSPX_MODEL_VIBRATO_H
+#endif //OPENDSPX_VIBRATO_H

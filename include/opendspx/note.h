@@ -1,5 +1,5 @@
-#ifndef OPENDSPX_MODEL_NOTE_H
-#define OPENDSPX_MODEL_NOTE_H
+#ifndef OPENDSPX_NOTE_H
+#define OPENDSPX_NOTE_H
 
 #include <string>
 
@@ -25,4 +25,4 @@ namespace opendspx {
 
 }
 
-#endif //OPENDSPX_MODEL_NOTE_H
+#endif //OPENDSPX_NOTE_H

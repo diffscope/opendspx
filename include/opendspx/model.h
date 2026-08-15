@@ -1,5 +1,5 @@
-#ifndef OPENDSPX_MODEL_MODEL_H
-#define OPENDSPX_MODEL_MODEL_H
+#ifndef OPENDSPX_MODEL_H
+#define OPENDSPX_MODEL_H
 
 #include <opendspx/content.h>
 
@@ -15,4 +15,4 @@ namespace opendspx {
 
 }
 
-#endif //OPENDSPX_MODEL_MODEL_H
+#endif //OPENDSPX_MODEL_H

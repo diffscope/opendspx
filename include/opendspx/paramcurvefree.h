@@ -1,5 +1,5 @@
-#ifndef OPENDSPX_MODEL_PARAMCURVEFREE_H
-#define OPENDSPX_MODEL_PARAMCURVEFREE_H
+#ifndef OPENDSPX_PARAMCURVEFREE_H
+#define OPENDSPX_PARAMCURVEFREE_H
 
 #include <vector>
 #include <utility>
@@ -21,4 +21,4 @@ namespace opendspx {
 
 }
 
-#endif //OPENDSPX_MODEL_PARAMCURVEFREE_H
+#endif //OPENDSPX_PARAMCURVEFREE_H

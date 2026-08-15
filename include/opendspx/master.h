@@ -1,5 +1,5 @@
-#ifndef OPENDSPX_MODEL_MASTER_H
-#define OPENDSPX_MODEL_MASTER_H
+#ifndef OPENDSPX_MASTER_H
+#define OPENDSPX_MASTER_H
 
 #include <opendspx/buscontrol.h>
 
@@ -11,4 +11,4 @@ namespace opendspx{
 
 }
 
-#endif //OPENDSPX_MODEL_MASTER_H
+#endif //OPENDSPX_MASTER_H

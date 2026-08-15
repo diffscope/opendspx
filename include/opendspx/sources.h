@@ -1,5 +1,5 @@
-#ifndef OPENDSPX_MODEL_SOURCES_H
-#define OPENDSPX_MODEL_SOURCES_H
+#ifndef OPENDSPX_SOURCES_H
+#define OPENDSPX_SOURCES_H
 
 #include <string>
 #include <vector>
@@ -19,4 +19,4 @@ namespace opendspx {
 
 }
 
-#endif //OPENDSPX_MODEL_SOURCES_H
+#endif //OPENDSPX_SOURCES_H

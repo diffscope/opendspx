@@ -1,5 +1,5 @@
-#ifndef OPENDSPX_MODEL_TIMELINE_H
-#define OPENDSPX_MODEL_TIMELINE_H
+#ifndef OPENDSPX_TIMELINE_H
+#define OPENDSPX_TIMELINE_H
 
 #include <vector>
 
@@ -17,4 +17,4 @@ namespace opendspx {
 
 }
 
-#endif //OPENDSPX_MODEL_TIMELINE_H
+#endif //OPENDSPX_TIMELINE_H

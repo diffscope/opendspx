@@ -1,5 +1,5 @@
-#ifndef OPENDSPX_MODEL_PARAM_H
-#define OPENDSPX_MODEL_PARAM_H
+#ifndef OPENDSPX_PARAM_H
+#define OPENDSPX_PARAM_H
 
 #include <vector>
 
@@ -17,4 +17,4 @@ namespace opendspx {
 
 }
 
-#endif //OPENDSPX_MODEL_PARAM_H
+#endif //OPENDSPX_PARAM_H

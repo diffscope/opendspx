@@ -1,5 +1,5 @@
-#ifndef OPENDSPX_MODEL_LABEL_H
-#define OPENDSPX_MODEL_LABEL_H
+#ifndef OPENDSPX_LABEL_H
+#define OPENDSPX_LABEL_H
 
 #include <string>
 
@@ -12,4 +12,4 @@ namespace opendspx {
 
 }
 
-#endif //OPENDSPX_MODEL_LABEL_H
+#endif //OPENDSPX_LABEL_H

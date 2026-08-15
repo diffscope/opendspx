@@ -1,5 +1,5 @@
-#ifndef OPENDSPX_MODEL_TRACKCONTROL_H
-#define OPENDSPX_MODEL_TRACKCONTROL_H
+#ifndef OPENDSPX_TRACKCONTROL_H
+#define OPENDSPX_TRACKCONTROL_H
 
 namespace opendspx {
 
@@ -12,4 +12,4 @@ namespace opendspx {
 
 }
 
-#endif //OPENDSPX_MODEL_TRACKCONTROL_H
+#endif //OPENDSPX_TRACKCONTROL_H

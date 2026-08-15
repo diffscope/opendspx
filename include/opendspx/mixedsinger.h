@@ -1,5 +1,5 @@
-#ifndef OPENDSPX_MODEL_MIXEDSINGER_H
-#define OPENDSPX_MODEL_MIXEDSINGER_H
+#ifndef OPENDSPX_MIXEDSINGER_H
+#define OPENDSPX_MIXEDSINGER_H
 
 #include <utility>
 #include <vector>
@@ -22,4 +22,4 @@ namespace opendspx {
 
 }
 
-#endif //OPENDSPX_MODEL_MIXEDSINGER_H
+#endif //OPENDSPX_MIXEDSINGER_H
