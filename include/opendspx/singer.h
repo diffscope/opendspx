@@ -4,7 +4,7 @@
 #include <memory>
 #include <utility>
 
-#include <nlohmann/json.hpp>
+#include <stdcorelib/support/json.h>
 
 #include <opendspx/workspace.h>
 
@@ -16,11 +16,11 @@ namespace opendspx {
             Mixed,
         };
         Type type;
-        nlohmann::json extra;
+        stdc::JsonValue extra;
         Workspace workspace;
 
     protected:
-        Singer(Type type, nlohmann::json extra = {}, Workspace workspace = {})
+        Singer(Type type, stdc::JsonValue extra = {}, Workspace workspace = {})
             : type(type), extra(std::move(extra)), workspace(std::move(workspace)) {
         }
     };

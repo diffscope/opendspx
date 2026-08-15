@@ -5,7 +5,7 @@
 #include <type_traits>
 #include <vector>
 
-#include <nlohmann/json.hpp>
+#include <stdcorelib/support/json.h>
 
 #include <opendspx/mixedsinger.h>
 #include <opendspx/sources.h>
@@ -19,7 +19,7 @@ namespace opendspx::impl {
 		template <typename T>
 		static constexpr auto getFromJsonFunc() {
 			if constexpr (std::is_same_v<T, SourceMixingRatio>) {
-				return [](const nlohmann::json &value, SourceMixingRatio &out, const JsonSerializationContext &context) {
+				return [](const stdc::JsonValue &value, SourceMixingRatio &out, const JsonSerializationContext &context) {
 					std::vector<double> ratios;
 					bool ok = fromJsonArrayHelper<double, fromJsonDoubleHelperWithConstraint<0, 1>>(value, ratios, context);
 					out.assign(ratios.begin(), ratios.end());
@@ -42,7 +42,7 @@ namespace opendspx::impl {
 		template <typename T>
 		static constexpr auto getToJsonFunc() {
 		    if constexpr (std::is_same_v<T, SourceMixingRatio>) {
-		        return [](nlohmann::json &json, const SourceMixingRatio &value, const JsonSerializationContext &context) {
+		        return [](stdc::JsonValue &json, const SourceMixingRatio &value, const JsonSerializationContext &context) {
 					std::vector<double> ratios(value.begin(), value.end());
 					bool ok = toJsonArrayHelper<double, toJsonNumberHelperWithConstraint<double, 0, 1>>(json, ratios, context);
 
@@ -65,13 +65,13 @@ namespace opendspx::impl {
     struct EntityWithRatioPostCheck {
 
         template <typename T>
-        static bool fromJson(const nlohmann::json &object, T &entity, const JsonSerializationContext &context) {
+        static bool fromJson(const stdc::JsonObject &object, T &entity, const JsonSerializationContext &context) {
 			(void) object;
 			return checkConstraint(entity, context);
         }
 
         template <typename T>
-        static bool toJson(nlohmann::json &object, const T &entity, const JsonSerializationContext &context) {
+        static bool toJson(stdc::JsonObject &object, const T &entity, const JsonSerializationContext &context) {
 			(void) object;
 			return checkConstraint(entity, context);
         }

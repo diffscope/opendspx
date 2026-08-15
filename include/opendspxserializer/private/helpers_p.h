@@ -1,7 +1,16 @@
 #ifndef OPENDSPX_SERIALIZATION_HELPERS_P_H
 #define OPENDSPX_SERIALIZATION_HELPERS_P_H
 
-#include <nlohmann/json.hpp>
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <limits>
+#include <optional>
+#include <string>
+#include <type_traits>
+#include <vector>
+
+#include <stdcorelib/support/json.h>
 
 #include <opendspxserializer/serializer.h>
 #include <opendspxserializer/serializationerror.h>
@@ -15,13 +24,13 @@ namespace opendspx::impl {
     };
 
     template <typename T>
-    bool toJsonTrivial(nlohmann::json &json, const T &value, const JsonSerializationContext &) {
+    bool toJsonTrivial(stdc::JsonValue &json, const T &value, const JsonSerializationContext &) {
         json = value;
         return true;
     }
 
     template <typename T, auto minimum_ = std::nullopt, auto maximum_ = std::nullopt>
-    bool toJsonNumberHelperWithConstraint(nlohmann::json &json, const T &value, const JsonSerializationContext &context) {
+    bool toJsonNumberHelperWithConstraint(stdc::JsonValue &json, const T &value, const JsonSerializationContext &context) {
         const std::optional<T> minimum = minimum_;
         const std::optional<T> maximum = maximum_;
         json = 0;
@@ -55,12 +64,12 @@ namespace opendspx::impl {
         explicit toJsonEnumHelper(const std::array<std::pair<K, T>, N> &enumValues) : enumValues(enumValues) {
         }
 
-        bool operator()(nlohmann::json &json, const T &value, const JsonSerializationContext &context) const {
+        bool operator()(stdc::JsonValue &json, const T &value, const JsonSerializationContext &context) const {
             auto it = std::ranges::find_if(enumValues, [value](const auto &pair) {
                 return pair.second == value;
             });
             if (it == enumValues.end()) {
-                json = {};
+                json = stdc::JsonValue();
                 if (!(context.options & Serializer::CheckError)) {
                     return true;
                 }
@@ -79,18 +88,21 @@ namespace opendspx::impl {
     };
 
     template <typename T, auto toJson = toJsonTrivial<T>>
-    bool toJsonArrayHelper(nlohmann::json &json, const std::vector<T> &entity, const JsonSerializationContext &context) {
-        json = nlohmann::json::array();
+    bool toJsonArrayHelper(stdc::JsonValue &json, const std::vector<T> &entity, const JsonSerializationContext &context) {
+        stdc::JsonArray array;
+        array.reserve(entity.size());
         bool ok = true;
         for (auto it = entity.begin(); it != entity.end(); ++it) {
             auto index = std::distance(entity.begin(), it);
-            nlohmann::json item;
+            stdc::JsonValue item;
             ok = toJson(item, *it, JsonSerializationContext{context.errors, context.options, context.path + "[" + std::to_string(index) + "]"}) && ok;
             if ((context.options & Serializer::FailFast) && !ok) {
+                json = std::move(array);
                 return false;
             }
-            json.push_back(std::move(item));
+            array.push_back(std::move(item));
         }
+        json = std::move(array);
         if (!(context.options & Serializer::CheckError))
             return true;
         return ok;
@@ -104,28 +116,27 @@ namespace opendspx::impl {
         return std::isfinite(v) && std::trunc(v) == v && v >= std::numeric_limits<int>::min() && v <= std::numeric_limits<int>::max();
     }
 
-    inline InvalidDataTypeError::DataType getDataType(const nlohmann::json &value) {
+    inline InvalidDataTypeError::DataType getDataType(const stdc::JsonValue &value) {
         switch (value.type()) {
-            case nlohmann::json::value_t::boolean:
+            case stdc::JsonValue::Bool:
                 return InvalidDataTypeError::Bool;
-            case nlohmann::json::value_t::number_float:
-            case nlohmann::json::value_t::number_integer:
-            case nlohmann::json::value_t::number_unsigned:
-                return isInteger(value.get<double>()) ? InvalidDataTypeError::Integer : InvalidDataTypeError::Double;
-            case nlohmann::json::value_t::string:
+            case stdc::JsonValue::Int:
+            case stdc::JsonValue::Double:
+                return isInteger(value.toDouble()) ? InvalidDataTypeError::Integer : InvalidDataTypeError::Double;
+            case stdc::JsonValue::String:
                 return InvalidDataTypeError::String;
-            case nlohmann::json::value_t::array:
+            case stdc::JsonValue::Array:
                 return InvalidDataTypeError::Array;
-            case nlohmann::json::value_t::object:
+            case stdc::JsonValue::Object:
                 return InvalidDataTypeError::Object;
             default:
                 return InvalidDataTypeError::Null;
         }
     }
 
-    inline bool fromJsonStringHelper(const nlohmann::json &value, std::string &out, const JsonSerializationContext &context) {
+    inline bool fromJsonStringHelper(const stdc::JsonValue &value, std::string &out, const JsonSerializationContext &context) {
         if (!(context.options & Serializer::CheckError)) {
-            out = value.is_string() ? value.get<std::string>() : std::string{};
+            out = value.toString();
             return true;
         }
         if (auto actualType = getDataType(value); actualType != InvalidDataTypeError::String) {
@@ -133,16 +144,16 @@ namespace opendspx::impl {
             out = {};
             return false;
         }
-        out = value.get<std::string>();
+        out = value.toString();
         return true;
     }
 
     template <auto minimum_ = std::nullopt, auto maximum_ = std::nullopt>
-    bool fromJsonDoubleHelperWithConstraint(const nlohmann::json &value, double &out, const JsonSerializationContext &context) {
+    bool fromJsonDoubleHelperWithConstraint(const stdc::JsonValue &value, double &out, const JsonSerializationContext &context) {
         const std::optional<double> minimum = minimum_;
         const std::optional<double> maximum = maximum_;
         if (!(context.options & Serializer::CheckError)) {
-            out = value.is_number() ? value.get<double>() : 0;
+            out = value.toDouble();
             return true;
         }
         if (auto actualType = getDataType(value); actualType != InvalidDataTypeError::Double && actualType != InvalidDataTypeError::Integer) {
@@ -150,7 +161,7 @@ namespace opendspx::impl {
             out = {};
             return false;
         }
-        auto v = value.get<double>();
+        auto v = value.toDouble();
         bool ok = true;
         if (minimum.has_value() && maximum.has_value()) {
             if (v < minimum || v > maximum) {
@@ -173,11 +184,11 @@ namespace opendspx::impl {
     }
 
     template <auto minimum_ = std::nullopt, auto maximum_ = std::nullopt>
-    bool fromJsonIntHelperWithConstraint(const nlohmann::json &value, int &out, const JsonSerializationContext &context) {
+    bool fromJsonIntHelperWithConstraint(const stdc::JsonValue &value, int &out, const JsonSerializationContext &context) {
         const std::optional<int> minimum = minimum_;
         const std::optional<int> maximum = maximum_;
         if (!(context.options & Serializer::CheckError)) {
-            out = value.is_number() ? value.get<int>() : 0;
+            out = static_cast<int>(value.toInt());
             return true;
         }
         if (auto actualType = getDataType(value); actualType != InvalidDataTypeError::Integer) {
@@ -185,7 +196,7 @@ namespace opendspx::impl {
             out = {};
             return false;
         }
-        auto v = value.get<int>();
+        auto v = static_cast<int>(value.toInt());
         bool ok = true;
         if (minimum.has_value() && maximum.has_value()) {
             if (v < minimum || v > maximum) {
@@ -207,9 +218,9 @@ namespace opendspx::impl {
         return ok;
     }
 
-    inline bool fromJsonBoolHelper(const nlohmann::json &value, bool &out, const JsonSerializationContext &context) {
+    inline bool fromJsonBoolHelper(const stdc::JsonValue &value, bool &out, const JsonSerializationContext &context) {
         if (!(context.options & Serializer::CheckError)) {
-            out = value.is_boolean() ? value.get<bool>() : false;
+            out = value.toBool();
             return true;
         }
         if (auto actualType = getDataType(value); actualType != InvalidDataTypeError::Bool) {
@@ -217,7 +228,7 @@ namespace opendspx::impl {
             out = false;
             return false;
         }
-        out = value.get<bool>();
+        out = value.toBool();
         return true;
     }
 
@@ -231,14 +242,22 @@ namespace opendspx::impl {
 
         static constexpr InvalidDataTypeError::DataType Flag = std::is_same_v<K, const char *> ? InvalidDataTypeError::String : InvalidDataTypeError::Integer;
 
-        bool operator()(const nlohmann::json &value, T &out, const JsonSerializationContext &context) const {
+        static EnumType enumKeyOf(const stdc::JsonValue &value) {
+            if constexpr (std::is_same_v<EnumType, std::string>) {
+                return value.toString();
+            } else {
+                return static_cast<int>(value.toInt());
+            }
+        }
+
+        bool operator()(const stdc::JsonValue &value, T &out, const JsonSerializationContext &context) const {
             if (!(context.options & Serializer::CheckError)) {
                 if (auto actualType = getDataType(value); actualType != Flag) {
                     out = {};
                     return true;
                 }
-                auto s = value.get<EnumType>();
-                auto it = std::ranges::find_if(enumValues, [s](const auto &pair) {
+                auto s = enumKeyOf(value);
+                auto it = std::ranges::find_if(enumValues, [&s](const auto &pair) {
                     return pair.first == s;
                 });
                 if (it == enumValues.end()) {
@@ -254,8 +273,8 @@ namespace opendspx::impl {
                 out = {};
                 return false;
             }
-            auto s = value.get<EnumType>();
-            auto it = std::ranges::find_if(enumValues, [s](const auto &pair) {
+            auto s = enumKeyOf(value);
+            auto it = std::ranges::find_if(enumValues, [&s](const auto &pair) {
                 return pair.first == s;
             });
             bool ok = it != enumValues.end();
@@ -276,7 +295,7 @@ namespace opendspx::impl {
     };
 
     template <typename T, auto fromJson>
-    bool fromJsonArrayHelper(const nlohmann::json &json, std::vector<T> &list, const JsonSerializationContext &context) {
+    bool fromJsonArrayHelper(const stdc::JsonValue &json, std::vector<T> &list, const JsonSerializationContext &context) {
         list.clear();
         auto &errors = context.errors;
         auto options = context.options;
@@ -284,7 +303,7 @@ namespace opendspx::impl {
             errors.addError<InvalidDataTypeError>(context.path, actualType, std::vector{InvalidDataTypeError::Array});
             return false;
         }
-        const auto &array = json.is_array() ? json : nlohmann::json::array();
+        const auto &array = json.toArray();
         bool ok = true;
         for (auto it = array.begin(); it != array.end(); ++it) {
             auto index = std::distance(array.begin(), it);
@@ -300,17 +319,18 @@ namespace opendspx::impl {
         return ok;
     }
 
-    inline bool fromJsonObjectHelper(const nlohmann::json &value, nlohmann::json &out, const JsonSerializationContext &context) {
+    // The object is handed back by pointer rather than by value, because a JsonValue owns its
+    // children and copying one here would copy the whole subtree at every level of nesting.
+    // A value that is not an object yields the shared empty object, so the caller never sees null.
+    inline bool fromJsonObjectHelper(const stdc::JsonValue &value, const stdc::JsonObject *&out, const JsonSerializationContext &context) {
+        out = &value.toObject();
         if (!(context.options & Serializer::CheckError)) {
-            out = value.is_object() ? value : nlohmann::json::object();
             return true;
         }
         if (auto actualType = getDataType(value); actualType != InvalidDataTypeError::Object) {
             context.errors.addError<InvalidDataTypeError>(context.path, actualType, std::vector{InvalidDataTypeError::Object});
-            out = nlohmann::json::object();
             return false;
         }
-        out = value;
         return true;
     }
 
@@ -319,17 +339,16 @@ namespace opendspx::impl {
         explicit fromJsonObjectHelperWithPropertyCheck(std::array<const char *, N> &&properties) : properties(properties) {
         }
 
-        bool operator()(const nlohmann::json &value, nlohmann::json &out, const JsonSerializationContext &context) const {
+        bool operator()(const stdc::JsonValue &value, const stdc::JsonObject *&out, const JsonSerializationContext &context) const {
+            out = &value.toObject();
             if (!(context.options & Serializer::CheckError)) {
-                out = value.is_object() ? value : nlohmann::json::object();
                 return true;
             }
             if (auto actualType = getDataType(value); actualType != InvalidDataTypeError::Object) {
                 context.errors.addError<InvalidDataTypeError>(context.path, actualType, std::vector{InvalidDataTypeError::Object});
-                out = nlohmann::json::object();
                 return false;
             }
-            const auto &obj = value;
+            const auto &obj = *out;
             std::vector<std::string> missingProperties;
             std::vector<std::string> redundantProperties;
             for (auto &property : properties) {
@@ -343,14 +362,13 @@ namespace opendspx::impl {
             if (!(context.options & Serializer::TolerateRedundantProperty) && obj.size() + missingProperties.size() > properties.size()) {
                 for (auto it = obj.begin(); it != obj.end(); ++it) {
                     if (!std::ranges::any_of(properties, [it](const auto &property) {
-                        return it.key() == property;
+                        return it->first == property;
                     })) {
-                        redundantProperties.push_back(it.key());
+                        redundantProperties.push_back(it->first);
                     }
                 }
                 context.errors.addError<RedundantPropertyError>(context.path, std::move(redundantProperties));
             }
-            out = obj;
             return missingProperties.empty() && ((context.options & Serializer::TolerateRedundantProperty) || redundantProperties.empty());
         }
 

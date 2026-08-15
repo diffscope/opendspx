@@ -2,6 +2,7 @@
 #define OPENDSPX_MODEL_SOURCEMIXINGRATIO_H
 
 #include <algorithm>
+#include <numeric>
 #include <vector>
 
 namespace opendspx {

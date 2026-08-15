@@ -65,7 +65,6 @@ set(OPENDSPX_CONVERTER_TARGET ${PROJECT_NAME}converter)
 set(CURRENT_YEAR)
 string(TIMESTAMP CURRENT_YEAR "%Y")
 
-find_package(nlohmann_json CONFIG REQUIRED)
 find_package(stdcorelib CONFIG REQUIRED)
 if(OPENDSPX_BUILD_SERIALIZER)
     find_package(zstd CONFIG REQUIRED)
@@ -90,7 +89,7 @@ if(TRUE)
     )
 
     # Link libraries
-    target_link_libraries(${OPENDSPX_MODEL_TARGET} INTERFACE nlohmann_json::nlohmann_json)
+    target_link_libraries(${OPENDSPX_MODEL_TARGET} INTERFACE stdcorelib::stdcorelib)
 
     if (OPENDSPX_INSTALL)
         target_include_directories(${OPENDSPX_MODEL_TARGET} INTERFACE

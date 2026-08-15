@@ -2,9 +2,10 @@
 #define OPENDSPX_SERIALIZER_SERIALIZATIONERROR_H
 
 #include <any>
+#include <memory>
+#include <string>
 #include <utility>
-
-#include <nlohmann/json.hpp>
+#include <vector>
 
 namespace opendspx {
 
@@ -56,21 +57,13 @@ namespace opendspx {
 
     class JsonParseFailureError : public SerializationError {
     public:
-        JsonParseFailureError(int code, std::size_t index, std::string message)
-            : SerializationError(JsonParseFailure), m_code(code), m_index(index), m_message(std::move(message)) {
-        }
-        int code() const {
-            return m_code;
-        }
-        std::size_t index() const {
-            return m_index;
+        explicit JsonParseFailureError(std::string message)
+            : SerializationError(JsonParseFailure), m_message(std::move(message)) {
         }
         std::string message() const {
             return m_message;
         }
     private:
-        int m_code;
-        std::size_t m_index;
         std::string m_message;
     };
 

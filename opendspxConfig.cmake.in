@@ -2,7 +2,6 @@
 
 include(CMakeFindDependencyMacro)
 
-find_dependency(nlohmann_json CONFIG)
 find_dependency(stdcorelib CONFIG)
 
 if(@OPENDSPX_BUILD_SERIALIZER@)

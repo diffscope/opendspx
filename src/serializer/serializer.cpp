@@ -5,7 +5,11 @@
 #include <array>
 #include <cassert>
 #include <ios>
+#include <iterator>
 #include <memory>
+#include <string>
+
+#include <stdcorelib/support/json.h>
 
 #include <opendspx/model.h>
 
@@ -73,7 +77,7 @@ namespace opendspx {
     }
 
     void Serializer::serialize(std::ostream &out, const Model &model, SerializationErrorList &errors, Option options, bool compress) {
-        nlohmann::json doc;
+        stdc::JsonValue doc;
         switch (model.version) {
             case Model::Version::V1:
                 doc = JsonConverterV1::toJson(model, errors, options);
@@ -99,9 +103,10 @@ namespace opendspx {
             jsonOutput = zstdOut.get();
         }
 
-        // Here we have to use private api to specify error_handler
-        nlohmann::detail::serializer<nlohmann::json> s(nlohmann::detail::output_adapter<char>(*jsonOutput), ' ', nlohmann::detail::error_handler_t::replace);
-        s.dump(doc, false, false, 0);
+        // Text that is not valid UTF-8 comes back with the offending bytes replaced, rather than
+        // failing the write outright
+        const auto text = doc.toJson();
+        jsonOutput->write(text.data(), static_cast<std::streamsize>(text.size()));
 
         if (compress) {
             zstdOut->flush();
@@ -113,8 +118,6 @@ namespace opendspx {
     }
 
     Model Serializer::deserialize(std::istream &in, SerializationErrorList &errors, Option options) {
-        nlohmann::json doc;
-
         std::istream *jsonInput = &in;
         std::unique_ptr<ZstdStreamBuf> zstdBuf;
         std::unique_ptr<std::istream> zstdIn;
@@ -129,27 +132,27 @@ namespace opendspx {
             jsonInput = zstdIn.get();
         }
 
-        try {
-            doc = nlohmann::json::parse(*jsonInput, nullptr);
-        } catch (const nlohmann::json::parse_error &e) {
-            if (zstdBuf && zstdBuf->hasError()) {
-                errors.addError<CompressionFailureError>(zstdBuf->errorMessage());
-                return {};
-            }
-            errors.addError<JsonParseFailureError>(e.id, e.byte, e.what());
+        const std::string text{std::istreambuf_iterator<char>(*jsonInput), std::istreambuf_iterator<char>()};
+        if (zstdBuf && zstdBuf->hasError()) {
+            errors.addError<CompressionFailureError>(zstdBuf->errorMessage());
             return {};
         }
-        if (!doc.is_object()) {
+
+        std::string parseError;
+        auto doc = stdc::JsonValue::fromJson(text, false, &parseError);
+        if (!parseError.empty()) {
+            errors.addError<JsonParseFailureError>(std::move(parseError));
+            return {};
+        }
+        if (!doc.isObject()) {
             errors.addError<JsonRootIsNotObjectError>();
         }
-        auto obj = std::move(doc);
-        std::string versionText;
-        try {
-            versionText = obj.at("version").get<std::string>();
-        } catch (const nlohmann::json::exception &e) {
+        const auto &versionValue = doc["version"];
+        if (!versionValue.isString()) {
             errors.addError<UnrecognizedVersionError>(std::string{});
             return {};
         }
+        const auto &versionText = versionValue.toString();
         bool ok;
         auto version = versionFromText(versionText, &ok);
         if (!ok) {
@@ -158,7 +161,7 @@ namespace opendspx {
         }
         switch (version) {
             case Model::Version::V1:
-                return JsonConverterV1::fromJson<Model>(obj, errors, options);
+                return JsonConverterV1::fromJson<Model>(doc, errors, options);
         }
         assert(false && "Unrecognized version");
         return {};

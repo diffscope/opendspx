@@ -1,6 +1,8 @@
 #ifndef OPENDSPX_SERIALIZATION_DECLARATIVE_P_H
 #define OPENDSPX_SERIALIZATION_DECLARATIVE_P_H
 
+#include <cassert>
+#include <memory>
 #include <optional>
 
 #include <opendspxserializer/private/helpers_p.h>
@@ -52,8 +54,8 @@ namespace opendspx::impl::decl {
         template <typename T_>
         static constexpr auto getFromJsonFunc() {
             using T = std::remove_cvref_t<T_>;
-            if constexpr (std::is_same_v<T, nlohmann::json>) {
-                return [](const nlohmann::json &object, T &entity, const JsonSerializationContext &) {
+            if constexpr (std::is_same_v<T, stdc::JsonValue>) {
+                return [](const stdc::JsonValue &object, T &entity, const JsonSerializationContext &) {
                     entity = object;
                     return true;
                 };
@@ -66,7 +68,7 @@ namespace opendspx::impl::decl {
             } else if constexpr (std::is_same_v<T, std::string>) {
                 return fromJsonStringHelper;
             } else if constexpr (IsMapped<T>) {
-                return [](const nlohmann::json &object, T &entity, const JsonSerializationContext &context) {
+                return [](const stdc::JsonValue &object, T &entity, const JsonSerializationContext &context) {
                     return Mapping<T>::type::fromJson(object, entity, context);
                 };
             } else if constexpr (is_vector<T>::value) {
@@ -75,13 +77,13 @@ namespace opendspx::impl::decl {
             } else if constexpr (is_shared_ptr<T>::value) {
                 using E = typename T::element_type;
                 static_assert(IsMapped<E>);
-                return [](const nlohmann::json &object, T &entity, const JsonSerializationContext &context) {
+                return [](const stdc::JsonValue &object, T &entity, const JsonSerializationContext &context) {
                     return Mapping<E>::type::fromJson(object, entity, context);
                 };
             } else if constexpr (is_optional<T>::value) {
                 using E = typename T::value_type;
-                return [](const nlohmann::json &object, T &entity, const JsonSerializationContext &context) {
-                    if (object.is_null()) {
+                return [](const stdc::JsonValue &object, T &entity, const JsonSerializationContext &context) {
+                    if (object.isNull()) {
                         entity.reset();
                         return true;
                     }
@@ -100,8 +102,8 @@ namespace opendspx::impl::decl {
         template<typename T_>
         static constexpr auto getToJsonFunc() {
             using T = std::remove_cvref_t<T_>;
-            if constexpr (std::is_same_v<T, nlohmann::json>) {
-                return [](nlohmann::json &object, const T &entity, const JsonSerializationContext &) {
+            if constexpr (std::is_same_v<T, stdc::JsonValue>) {
+                return [](stdc::JsonValue &object, const T &entity, const JsonSerializationContext &) {
                     object = entity;
                     return true;
                 };
@@ -114,7 +116,7 @@ namespace opendspx::impl::decl {
             } else if constexpr (std::is_same_v<T, std::string>) {
                 return toJsonTrivial<T>;
             } else if constexpr (IsMapped<T>) {
-                return [](nlohmann::json &object, const T &entity, const JsonSerializationContext &context) {
+                return [](stdc::JsonValue &object, const T &entity, const JsonSerializationContext &context) {
                     return Mapping<T>::type::toJson(object, entity, context);
                 };
             } else if constexpr (is_vector<T>::value) {
@@ -123,14 +125,14 @@ namespace opendspx::impl::decl {
             } else if constexpr (is_shared_ptr<T>::value) {
                 using E = typename T::element_type;
                 static_assert(IsMapped<E>);
-                return [](nlohmann::json &object, const T &entity, const JsonSerializationContext &context) {
+                return [](stdc::JsonValue &object, const T &entity, const JsonSerializationContext &context) {
                     return Mapping<E>::type::toJson(object, entity, context);
                 };
             } else if constexpr (is_optional<T>::value) {
                 using E = typename T::value_type;
-                return [](nlohmann::json &object, const T &entity, const JsonSerializationContext &context) {
+                return [](stdc::JsonValue &object, const T &entity, const JsonSerializationContext &context) {
                     if (!entity.has_value()) {
-                        object = nullptr;
+                        object = stdc::JsonValue();
                         return true;
                     }
                     return TrivialOrMappingConvert::getToJsonFunc<E>()(object, *entity, context);
@@ -156,7 +158,7 @@ namespace opendspx::impl::decl {
 
         template <typename T>
         static constexpr auto getToJsonFunc() {
-            return [] (nlohmann::json &json, const T &value, const JsonSerializationContext &context) {
+            return [] (stdc::JsonValue &json, const T &value, const JsonSerializationContext &context) {
                 return toJsonNumberHelperWithConstraint<T, minValue, maxValue>(json, value, context);
             };
         }
@@ -226,20 +228,23 @@ namespace opendspx::impl::decl {
         using EntityType = typename member_pointer_traits<decltype(propertyPtr)>::class_type;
         using PropertyType = typename member_pointer_traits<decltype(propertyPtr)>::member_type;
 
-        static bool fromJson(const nlohmann::json &object, EntityType &entity, const JsonSerializationContext &context) {
-            if (!object.contains(propertyName)) {
+        static bool fromJson(const stdc::JsonObject &object, EntityType &entity, const JsonSerializationContext &context) {
+            auto it = object.find(propertyName);
+            if (it == object.end()) {
                 return false;
             }
-            const auto &v = object.at(propertyName);
+            const auto &v = it->second;
             bool ok = Convert::template getFromJsonFunc<PropertyType>()(v, entity.*propertyPtr, {context.errors, context.options, context.path + "." + propertyName});
             if (!ok && (context.options & Serializer::FailFast)) {
                 return false;
             }
             return ok;
         }
-        static bool toJson(nlohmann::json &object, const EntityType &entity, const JsonSerializationContext &context) {
+        static bool toJson(stdc::JsonObject &object, const EntityType &entity, const JsonSerializationContext &context) {
             const auto &v = entity.*propertyPtr;
-            bool ok = Convert::template getToJsonFunc<PropertyType>()(object[propertyName], v, {context.errors, context.options, context.path + "." + propertyName});
+            stdc::JsonValue value;
+            bool ok = Convert::template getToJsonFunc<PropertyType>()(value, v, {context.errors, context.options, context.path + "." + propertyName});
+            object[propertyName] = std::move(value);
             if (!ok && (context.options & Serializer::FailFast)) {
                 return false;
             }
@@ -267,29 +272,33 @@ namespace opendspx::impl::decl {
 
     template <typename T, typename... PropertyDecls>
     struct Entity {
-        static bool fromJson(const nlohmann::json &object_, T &entity, const JsonSerializationContext &context) {
-            nlohmann::json object;
+        static bool fromJson(const stdc::JsonValue &object_, T &entity, const JsonSerializationContext &context) {
+            const stdc::JsonObject *object;
             bool ok = fromJsonObjectHelperWithPropertyCheck(makePropertyNameArray<PropertyDecls...>())(object_, object, context);
             if (!ok && (context.options & Serializer::FailFast)) {
                 return false;
             }
             if (context.options & Serializer::FailFast)
-                return (PropertyDecls::fromJson(object, entity, context) && ...);
-            return (PropertyDecls::fromJson(object, entity, context), ...);
+                return (PropertyDecls::fromJson(*object, entity, context) && ...);
+            return (PropertyDecls::fromJson(*object, entity, context), ...);
         }
-        static bool fromJson(const nlohmann::json &object, std::shared_ptr<T> &entity, const JsonSerializationContext &context) {
+        static bool fromJson(const stdc::JsonValue &object, std::shared_ptr<T> &entity, const JsonSerializationContext &context) {
             if (!entity) {
                 entity = std::make_shared<T>();
             }
             return fromJson(object, *entity, context);
         }
-        static bool toJson(nlohmann::json &object, const T &entity, const JsonSerializationContext &context) {
-            object = nlohmann::json::object();
+        static bool toJson(stdc::JsonValue &object, const T &entity, const JsonSerializationContext &context) {
+            stdc::JsonObject properties;
+            bool ok;
             if (context.options & Serializer::FailFast)
-                return (PropertyDecls::toJson(object, entity, context) && ...);
-            return (PropertyDecls::toJson(object, entity, context), ...);
+                ok = (PropertyDecls::toJson(properties, entity, context) && ...);
+            else
+                ok = (PropertyDecls::toJson(properties, entity, context), ...);
+            object = std::move(properties);
+            return ok;
         }
-        static bool toJson(nlohmann::json &object, const std::shared_ptr<T> &entity, const JsonSerializationContext &context) {
+        static bool toJson(stdc::JsonValue &object, const std::shared_ptr<T> &entity, const JsonSerializationContext &context) {
             return toJson(object, *entity, context);
         }
     };
@@ -304,17 +313,18 @@ namespace opendspx::impl::decl {
     template <typename T, auto objectTypePropertyPtr, FixedString objectTypePropertyName_, typename... DeriveDecls>
     struct BaseEntity {
         static constexpr auto objectTypePropertyName = objectTypePropertyName_.str;
-        static bool fromJson(const nlohmann::json &, T &, const JsonSerializationContext &) {
+        static bool fromJson(const stdc::JsonValue &, T &, const JsonSerializationContext &) {
             static_assert(sizeof(T) == 0, "BaseEntity::fromJson with T & not supported");
         }
-        static bool fromJson(const nlohmann::json &object_, std::shared_ptr<T> &entity, const JsonSerializationContext &context) {
-            nlohmann::json object;
+        static bool fromJson(const stdc::JsonValue &object_, std::shared_ptr<T> &entity, const JsonSerializationContext &context) {
+            const stdc::JsonObject *object;
             bool ok = fromJsonObjectHelper(object_, object, context);
             if (!ok) {
                 // Ignore fail-fast, because even if fail-fast is disabled, nothing can be done
                 return false;
             }
-            if (!object.contains(objectTypePropertyName)) {
+            auto it = object->find(objectTypePropertyName);
+            if (it == object->end()) {
                 if (context.options & Serializer::CheckError) {
                     context.errors.addError<MissingPropertyError>(context.path, std::vector<std::string>{objectTypePropertyName});
                     return false;
@@ -323,11 +333,11 @@ namespace opendspx::impl::decl {
                     return true;
                 }
             }
-            auto objectTypeName = object[objectTypePropertyName].template get<std::string>();
+            const auto &objectTypeName = it->second.toString();
             bool fwdRet = false;
             bool found = ((DeriveDecls::objectTypeName == objectTypeName ? ([&] {
                 typename DeriveDecls::EntityType e;
-                fwdRet = Mapping<typename DeriveDecls::EntityType>::type::fromJson(object, e, context);
+                fwdRet = Mapping<typename DeriveDecls::EntityType>::type::fromJson(object_, e, context);
                 entity = std::make_shared<typename DeriveDecls::EntityType>(std::move(e));
             }(), true) : false) || ...);
             if (!found) {
@@ -340,7 +350,7 @@ namespace opendspx::impl::decl {
             }
             return fwdRet;
         }
-        static bool toJson(nlohmann::json &object, const T &entity, const JsonSerializationContext &context) {
+        static bool toJson(stdc::JsonValue &object, const T &entity, const JsonSerializationContext &context) {
             auto objectTypeEnum = entity.*objectTypePropertyPtr;
             bool fwdRet = false;
             bool found = ((DeriveDecls::objectTypeEnum == objectTypeEnum ? ([&] {
@@ -351,49 +361,52 @@ namespace opendspx::impl::decl {
             }
             return fwdRet;
         }
-        static bool toJson(nlohmann::json &object, const std::shared_ptr<T> &entity, const JsonSerializationContext &context) {
+        static bool toJson(stdc::JsonValue &object, const std::shared_ptr<T> &entity, const JsonSerializationContext &context) {
             return toJson(object, *entity, context);
         }
     };
 
     template <typename T>
     struct MapEntity {
-        static bool fromJson(const nlohmann::json &object_, T &entity, const JsonSerializationContext &context) {
-            nlohmann::json object;
+        static bool fromJson(const stdc::JsonValue &object_, T &entity, const JsonSerializationContext &context) {
+            const stdc::JsonObject *object;
             bool ok = fromJsonObjectHelper(object_, object, context);
             if (!ok) {
                 // Ignore fail-fast, because even if fail-fast is disabled, nothing can be done
                 return false;
             }
-            for (auto it = object.begin(); it != object.end(); ++it) {
+            for (const auto &[key, value] : *object) {
                 typename T::mapped_type contentEntity;
-                if (!TrivialOrMappingConvert::getFromJsonFunc<typename T::mapped_type>()(it.value(), contentEntity, context)) {
+                if (!TrivialOrMappingConvert::getFromJsonFunc<typename T::mapped_type>()(value, contentEntity, context)) {
                     if (context.options & Serializer::FailFast)
                         return false;
                 }
-                entity[it.key()] = contentEntity;
+                entity[key] = std::move(contentEntity);
             }
             return true;
         }
-        static bool fromJson(const nlohmann::json &object, std::shared_ptr<T> &entity, const JsonSerializationContext &context) {
+        static bool fromJson(const stdc::JsonValue &object, std::shared_ptr<T> &entity, const JsonSerializationContext &context) {
             if (!entity) {
                 entity = std::make_shared<T>();
             }
             return fromJson(object, *entity, context);
         }
-        static bool toJson(nlohmann::json &object, const T &entity, const JsonSerializationContext &context) {
-            object = nlohmann::json::object();
+        static bool toJson(stdc::JsonValue &object, const T &entity, const JsonSerializationContext &context) {
+            stdc::JsonObject contents;
             for (const auto &[key, value] : entity) {
-                nlohmann::json contentJson;
+                stdc::JsonValue contentJson;
                 if (!TrivialOrMappingConvert::getToJsonFunc<decltype(value)>()(contentJson, value, context)) {
-                    if (context.options & Serializer::FailFast)
+                    if (context.options & Serializer::FailFast) {
+                        object = std::move(contents);
                         return false;
+                    }
                 }
-                object[key] = contentJson;
+                contents[key] = std::move(contentJson);
             }
+            object = std::move(contents);
             return true;
         }
-        static bool toJson(nlohmann::json &object, const std::shared_ptr<T> &entity, const JsonSerializationContext &context) {
+        static bool toJson(stdc::JsonValue &object, const std::shared_ptr<T> &entity, const JsonSerializationContext &context) {
             return toJson(object, *entity, context);
         }
     };

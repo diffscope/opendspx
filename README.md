@@ -14,7 +14,6 @@ Build-time dependencies:
 
 - CMake 3.17 or newer
 - A C++20-capable compiler
-- `nlohmann-json`
 - `stdcorelib`
 - `zstd` for the serializer module
 - `wolf-midi` for the converter module
