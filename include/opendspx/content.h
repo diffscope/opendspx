@@ -1,5 +1,5 @@
-#ifndef OPENDSPX_MODEL_CONTENT_H
-#define OPENDSPX_MODEL_CONTENT_H
+#ifndef OPENDSPX_CONTENT_H
+#define OPENDSPX_CONTENT_H
 
 #include <vector>
 
@@ -21,4 +21,4 @@ namespace opendspx{
 
 }
 
-#endif //OPENDSPX_MODEL_CONTENT_H
+#endif //OPENDSPX_CONTENT_H

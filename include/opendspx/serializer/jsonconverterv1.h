@@ -4,9 +4,9 @@
 #include <stdcorelib/support/json.h>
 
 #include <opendspx/model.h>
-#include <opendspxserializer/serializer.h>
-#include <opendspxserializer/private/declarative_p.h>
-#include <opendspxserializer/private/sourcehelpers_p.h>
+#include <opendspx/serializer/serializer.h>
+#include <opendspx/serializer/private/declarative_p.h>
+#include <opendspx/serializer/private/sourcehelpers_p.h>
 
 namespace opendspx {
 

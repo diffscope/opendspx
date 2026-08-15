@@ -1,5 +1,5 @@
-#ifndef OPENDSPX_MODEL_ANCHORNODE_H
-#define OPENDSPX_MODEL_ANCHORNODE_H
+#ifndef OPENDSPX_ANCHORNODE_H
+#define OPENDSPX_ANCHORNODE_H
 
 namespace opendspx {
 
@@ -16,4 +16,4 @@ namespace opendspx {
 
 }
 
-#endif //OPENDSPX_MODEL_ANCHORNODE_H
+#endif //OPENDSPX_ANCHORNODE_H

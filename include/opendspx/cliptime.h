@@ -1,5 +1,5 @@
-#ifndef OPENDSPX_MODEL_CLIPTIME_H
-#define OPENDSPX_MODEL_CLIPTIME_H
+#ifndef OPENDSPX_CLIPTIME_H
+#define OPENDSPX_CLIPTIME_H
 
 namespace opendspx {
 
@@ -12,4 +12,4 @@ namespace opendspx {
 
 }
 
-#endif //OPENDSPX_MODEL_CLIPTIME_H
+#endif //OPENDSPX_CLIPTIME_H

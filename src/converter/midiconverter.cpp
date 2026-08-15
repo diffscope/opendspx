@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <exception>
 #include <ranges>
 #include <deque>
 #include <map>
@@ -11,7 +12,7 @@
 #include <wolf-midi/MidiFile.h>
 
 #include <opendspx/model.h>
-#include <opendspxconverter/midi/midiintermediatedata.h>
+#include <opendspx/converter/midi/midiintermediatedata.h>
 
 namespace opendspx {
 
@@ -20,8 +21,17 @@ namespace opendspx {
     MidiIntermediateData MidiConverter::convertMidiToIntermediate(std::istream &in, Error &error, ConvertMidiToIntermediateOption option) {
         error = Error::NoError;
 
+        // load() answers false for some malformed input and throws for the rest -- a file that
+        // stops in the middle of a field reaches the stream reader as a failure rather than as a
+        // verdict -- and the caller was promised an error code either way.
         Midi::MidiFile midiFile;
-        if (!midiFile.load(in)) {
+        bool loaded = false;
+        try {
+            loaded = midiFile.load(in);
+        } catch (const std::exception &) {
+            loaded = false;
+        }
+        if (!loaded) {
             error = Error::InvalidMidiData;
             return {};
         }

@@ -1,5 +1,5 @@
-#ifndef OPENDSPX_MODEL_PARAMS_H
-#define OPENDSPX_MODEL_PARAMS_H
+#ifndef OPENDSPX_PARAMS_H
+#define OPENDSPX_PARAMS_H
 
 #include <map>
 #include <string>
@@ -15,4 +15,4 @@ namespace opendspx {
 
 }
 
-#endif //OPENDSPX_MODEL_PARAMS_H
+#endif //OPENDSPX_PARAMS_H

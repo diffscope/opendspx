@@ -1,5 +1,5 @@
-#ifndef OPENDSPX_MODEL_BUSCONTROL_H
-#define OPENDSPX_MODEL_BUSCONTROL_H
+#ifndef OPENDSPX_BUSCONTROL_H
+#define OPENDSPX_BUSCONTROL_H
 
 namespace opendspx {
 
@@ -11,4 +11,4 @@ namespace opendspx {
 
 }
 
-#endif //OPENDSPX_MODEL_BUSCONTROL_H
+#endif //OPENDSPX_BUSCONTROL_H

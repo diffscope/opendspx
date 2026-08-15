@@ -1,5 +1,5 @@
-#ifndef OPENDSPX_MODEL_TRACK_H
-#define OPENDSPX_MODEL_TRACK_H
+#ifndef OPENDSPX_TRACK_H
+#define OPENDSPX_TRACK_H
 
 #include <vector>
 #include <string>
@@ -21,4 +21,4 @@ namespace opendspx {
 
 }
 
-#endif //OPENDSPX_MODEL_TRACK_H
+#endif //OPENDSPX_TRACK_H

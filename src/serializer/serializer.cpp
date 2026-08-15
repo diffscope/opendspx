@@ -13,8 +13,8 @@
 
 #include <opendspx/model.h>
 
-#include <opendspxserializer/jsonconverterv1.h>
-#include <opendspxserializer/serializationerror.h>
+#include <opendspx/serializer/jsonconverterv1.h>
+#include <opendspx/serializer/serializationerror.h>
 
 namespace opendspx {
 
@@ -138,9 +138,9 @@ namespace opendspx {
             return {};
         }
 
-        std::string parseError;
+        stdc::JsonParseError parseError;
         auto doc = stdc::JsonValue::fromJson(text, false, &parseError);
-        if (!parseError.empty()) {
+        if (parseError) {
             errors.addError<JsonParseFailureError>(std::move(parseError));
             return {};
         }

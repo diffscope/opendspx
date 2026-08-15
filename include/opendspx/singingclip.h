@@ -1,5 +1,5 @@
-#ifndef OPENDSPX_MODEL_SINGINGCLIP_H
-#define OPENDSPX_MODEL_SINGINGCLIP_H
+#ifndef OPENDSPX_SINGINGCLIP_H
+#define OPENDSPX_SINGINGCLIP_H
 
 #include <optional>
 #include <utility>
@@ -26,4 +26,4 @@ namespace opendspx {
 
 }
 
-#endif //OPENDSPX_MODEL_SINGINGCLIP_H
+#endif //OPENDSPX_SINGINGCLIP_H

@@ -1,5 +1,5 @@
-#ifndef OPENDSPX_MODEL_CONTROLPOINT_H
-#define OPENDSPX_MODEL_CONTROLPOINT_H
+#ifndef OPENDSPX_CONTROLPOINT_H
+#define OPENDSPX_CONTROLPOINT_H
 
 namespace opendspx {
 
@@ -10,4 +10,4 @@ namespace opendspx {
 
 }
 
-#endif //OPENDSPX_MODEL_CONTROLPOINT_H
+#endif //OPENDSPX_CONTROLPOINT_H

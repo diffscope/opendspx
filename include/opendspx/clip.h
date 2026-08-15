@@ -1,5 +1,5 @@
-#ifndef OPENDSPX_MODEL_CLIP_H
-#define OPENDSPX_MODEL_CLIP_H
+#ifndef OPENDSPX_CLIP_H
+#define OPENDSPX_CLIP_H
 
 #include <memory>
 #include <string>
@@ -32,4 +32,4 @@ namespace opendspx {
 
 }
 
-#endif //OPENDSPX_MODEL_CLIP_H
+#endif //OPENDSPX_CLIP_H

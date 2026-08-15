@@ -1,5 +1,5 @@
-#ifndef OPENDSPX_MODEL_AUDIOCLIP_H
-#define OPENDSPX_MODEL_AUDIOCLIP_H
+#ifndef OPENDSPX_AUDIOCLIP_H
+#define OPENDSPX_AUDIOCLIP_H
 
 #include <opendspx/clip.h>
 
@@ -18,4 +18,4 @@ namespace opendspx {
 
 }
 
-#endif //OPENDSPX_MODEL_AUDIOCLIP_H
+#endif //OPENDSPX_AUDIOCLIP_H

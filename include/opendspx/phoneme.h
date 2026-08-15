@@ -1,5 +1,5 @@
-#ifndef OPENDSPX_MODEL_PHONEME_H
-#define OPENDSPX_MODEL_PHONEME_H
+#ifndef OPENDSPX_PHONEME_H
+#define OPENDSPX_PHONEME_H
 
 #include <string>
 
@@ -14,4 +14,4 @@ namespace opendspx {
 
 }
 
-#endif //OPENDSPX_MODEL_PHONEME_H
+#endif //OPENDSPX_PHONEME_H

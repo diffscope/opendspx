@@ -1,5 +1,5 @@
-#ifndef OPENDSPX_MODEL_SINGLESINGER_H
-#define OPENDSPX_MODEL_SINGLESINGER_H
+#ifndef OPENDSPX_SINGLESINGER_H
+#define OPENDSPX_SINGLESINGER_H
 
 #include <string>
 #include <utility>
@@ -20,4 +20,4 @@ namespace opendspx {
 
 }
 
-#endif //OPENDSPX_MODEL_SINGLESINGER_H
+#endif //OPENDSPX_SINGLESINGER_H

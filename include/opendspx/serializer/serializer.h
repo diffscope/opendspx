@@ -7,8 +7,8 @@
 
 #include <opendspx/model.h>
 
-#include <opendspxserializer/opendspxserializerglobal.h>
-#include <opendspxserializer/serializationerror.h>
+#include <opendspx/serializer/opendspxserializerglobal.h>
+#include <opendspx/serializer/serializationerror.h>
 
 namespace opendspx {
 

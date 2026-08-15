@@ -1,5 +1,5 @@
-#ifndef OPENDSPX_SERIALIZATION_HELPERS_P_H
-#define OPENDSPX_SERIALIZATION_HELPERS_P_H
+#ifndef OPENDSPX_SERIALIZER_HELPERS_P_H
+#define OPENDSPX_SERIALIZER_HELPERS_P_H
 
 #include <algorithm>
 #include <array>
@@ -12,8 +12,8 @@
 
 #include <stdcorelib/support/json.h>
 
-#include <opendspxserializer/serializer.h>
-#include <opendspxserializer/serializationerror.h>
+#include <opendspx/serializer/serializer.h>
+#include <opendspx/serializer/serializationerror.h>
 
 namespace opendspx::impl {
 
@@ -319,6 +319,22 @@ namespace opendspx::impl {
         return ok;
     }
 
+    // For a property whose declared type is an object rather than any value, so the object has to
+    // be handed over rather than pointed at
+    inline bool fromJsonObjectValueHelper(const stdc::JsonValue &value, stdc::JsonObject &out, const JsonSerializationContext &context) {
+        if (!(context.options & Serializer::CheckError)) {
+            out = value.toObject();
+            return true;
+        }
+        if (auto actualType = getDataType(value); actualType != InvalidDataTypeError::Object) {
+            context.errors.addError<InvalidDataTypeError>(context.path, actualType, std::vector{InvalidDataTypeError::Object});
+            out = {};
+            return false;
+        }
+        out = value.toObject();
+        return true;
+    }
+
     // The object is handed back by pointer rather than by value, because a JsonValue owns its
     // children and copying one here would copy the whole subtree at every level of nesting.
     // A value that is not an object yields the shared empty object, so the caller never sees null.
@@ -377,4 +393,4 @@ namespace opendspx::impl {
 
 }
 
-#endif //OPENDSPX_SERIALIZATION_HELPERS_P_H
+#endif //OPENDSPX_SERIALIZER_HELPERS_P_H
