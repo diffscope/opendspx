@@ -59,10 +59,10 @@ namespace opendspx {
 
     class JsonParseFailureError : public SerializationError {
     public:
-        explicit JsonParseFailureError(stdc::JsonParseError error)
+        explicit JsonParseFailureError(stdc::json::ParseError error)
             : SerializationError(JsonParseFailure), m_error(std::move(error)) {
         }
-        stdc::JsonParseError::Code code() const {
+        stdc::json::ParseError::Code code() const {
             return m_error.code;
         }
         std::size_t offset() const {
@@ -78,11 +78,11 @@ namespace opendspx {
         std::string message() const {
             return m_error.message();
         }
-        const stdc::JsonParseError &error() const {
+        const stdc::json::ParseError &error() const {
             return m_error;
         }
     private:
-        stdc::JsonParseError m_error;
+        stdc::json::ParseError m_error;
     };
 
     class JsonRootIsNotObjectError : public SerializationError {

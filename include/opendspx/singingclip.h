@@ -21,7 +21,7 @@ namespace opendspx {
         Params params;
         std::optional<Sources> sources;
     };
-    
+
     using SingingClipRef = std::shared_ptr<SingingClip>;
 
 }

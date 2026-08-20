@@ -7,14 +7,14 @@
 
 #include <stdcorelib/support/json.h>
 
-namespace opendspx{
+namespace opendspx {
 
     // A class of its own rather than an alias for the map, so that it stays a distinct type for
     // template matching. An alias would be the same type as any other map spelled the same way,
     // and the serializer's Mapping<Workspace> specialization would then claim that type too.
-    class Workspace : public std::map<std::string, stdc::JsonObject, std::less<>> {
+    class Workspace : public std::map<std::string, stdc::json::Object, std::less<>> {
     public:
-        using std::map<std::string, stdc::JsonObject, std::less<>>::map;
+        using std::map<std::string, stdc::json::Object, std::less<>>::map;
     };
 
 }

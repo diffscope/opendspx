@@ -21,7 +21,7 @@ namespace {
     }
 
     template <typename T>
-    stdc::JsonValue write(const T &entity, SerializationErrorList &errors,
+    stdc::json::Value write(const T &entity, SerializationErrorList &errors,
                           Serializer::Option options = Serializer::CheckError) {
         return JsonConverterV1::toJson(entity, errors, options);
     }

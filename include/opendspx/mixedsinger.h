@@ -10,7 +10,7 @@
 namespace opendspx {
 
     struct MixedSinger : Singer {
-        MixedSinger(std::vector<SingerRef> singers = {}, SourceMixingRatio ratio = {}, stdc::JsonValue extra = {}, Workspace workspace = {})
+        MixedSinger(std::vector<SingerRef> singers = {}, SourceMixingRatio ratio = {}, stdc::json::Value extra = {}, Workspace workspace = {})
             : Singer(Type::Mixed, std::move(extra), std::move(workspace)), singers(std::move(singers)), ratio(std::move(ratio)) {
         }
 

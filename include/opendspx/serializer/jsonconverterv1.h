@@ -305,10 +305,10 @@ namespace opendspx {
         template<>
         struct decl::Mapping<SourceMixingRatio> {
             struct type {
-                static bool fromJson(const stdc::JsonValue &object, SourceMixingRatio &entity, const JsonSerializationContext &context) {
+                static bool fromJson(const stdc::json::Value &object, SourceMixingRatio &entity, const JsonSerializationContext &context) {
                     return ArrayRangeConstraintConvert<0, 1>::template getFromJsonFunc<SourceMixingRatio>()(object, entity, context);
                 }
-                static bool toJson(stdc::JsonValue &object, const SourceMixingRatio &entity, const JsonSerializationContext &context) {
+                static bool toJson(stdc::json::Value &object, const SourceMixingRatio &entity, const JsonSerializationContext &context) {
                     return ArrayRangeConstraintConvert<0, 1>::template getToJsonFunc<SourceMixingRatio>()(object, entity, context);
                 }
             };
@@ -391,14 +391,14 @@ namespace opendspx {
     class OPENDSPX_SERIALIZER_EXPORT JsonConverterV1 {
     public:
         template <typename T>
-        static stdc::JsonValue toJson(const T &entity, SerializationErrorList &errors, Serializer::Option options = {Serializer::FailFast | Serializer::CheckError}, const std::string &path = {"$"}) {
-            stdc::JsonValue json;
+        static stdc::json::Value toJson(const T &entity, SerializationErrorList &errors, Serializer::Option options = {Serializer::FailFast | Serializer::CheckError}, const std::string &path = {"$"}) {
+            stdc::json::Value json;
             impl::decl::TrivialOrMappingConvert::getToJsonFunc<T>()(json, entity, impl::JsonSerializationContext{errors, options, path});
             return json;
         }
 
         template <typename T>
-        static T fromJson(const stdc::JsonValue &json, SerializationErrorList &errors, Serializer::Option options = {Serializer::FailFast | Serializer::CheckError}, const std::string &path = {"$"}) {
+        static T fromJson(const stdc::json::Value &json, SerializationErrorList &errors, Serializer::Option options = {Serializer::FailFast | Serializer::CheckError}, const std::string &path = {"$"}) {
             T entity;
             impl::decl::TrivialOrMappingConvert::getFromJsonFunc<T>()(json, entity, impl::JsonSerializationContext{errors, options, path});
             return entity;

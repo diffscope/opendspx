@@ -10,10 +10,10 @@
 #include <type_traits>
 #include <vector>
 
-#include <stdcorelib/support/json.h>
-
-#include <opendspx/serializer/serializer.h>
 #include <opendspx/serializer/serializationerror.h>
+#include <opendspx/serializer/serializer.h>
+
+#include <stdcorelib/support/json.h>
 
 namespace opendspx::impl {
 
@@ -24,13 +24,13 @@ namespace opendspx::impl {
     };
 
     template <typename T>
-    bool toJsonTrivial(stdc::JsonValue &json, const T &value, const JsonSerializationContext &) {
+    bool toJsonTrivial(stdc::json::Value &json, const T &value, const JsonSerializationContext &) {
         json = value;
         return true;
     }
 
     template <typename T, auto minimum_ = std::nullopt, auto maximum_ = std::nullopt>
-    bool toJsonNumberHelperWithConstraint(stdc::JsonValue &json, const T &value, const JsonSerializationContext &context) {
+    bool toJsonNumberHelperWithConstraint(stdc::json::Value &json, const T &value, const JsonSerializationContext &context) {
         const std::optional<T> minimum = minimum_;
         const std::optional<T> maximum = maximum_;
         json = 0;
@@ -64,12 +64,12 @@ namespace opendspx::impl {
         explicit toJsonEnumHelper(const std::array<std::pair<K, T>, N> &enumValues) : enumValues(enumValues) {
         }
 
-        bool operator()(stdc::JsonValue &json, const T &value, const JsonSerializationContext &context) const {
+        bool operator()(stdc::json::Value &json, const T &value, const JsonSerializationContext &context) const {
             auto it = std::ranges::find_if(enumValues, [value](const auto &pair) {
                 return pair.second == value;
             });
             if (it == enumValues.end()) {
-                json = stdc::JsonValue();
+                json = stdc::json::Value();
                 if (!(context.options & Serializer::CheckError)) {
                     return true;
                 }
@@ -88,13 +88,13 @@ namespace opendspx::impl {
     };
 
     template <typename T, auto toJson = toJsonTrivial<T>>
-    bool toJsonArrayHelper(stdc::JsonValue &json, const std::vector<T> &entity, const JsonSerializationContext &context) {
-        stdc::JsonArray array;
+    bool toJsonArrayHelper(stdc::json::Value &json, const std::vector<T> &entity, const JsonSerializationContext &context) {
+        stdc::json::Array array;
         array.reserve(entity.size());
         bool ok = true;
         for (auto it = entity.begin(); it != entity.end(); ++it) {
             auto index = std::distance(entity.begin(), it);
-            stdc::JsonValue item;
+            stdc::json::Value item;
             ok = toJson(item, *it, JsonSerializationContext{context.errors, context.options, context.path + "[" + std::to_string(index) + "]"}) && ok;
             if ((context.options & Serializer::FailFast) && !ok) {
                 json = std::move(array);
@@ -116,25 +116,25 @@ namespace opendspx::impl {
         return std::isfinite(v) && std::trunc(v) == v && v >= std::numeric_limits<int>::min() && v <= std::numeric_limits<int>::max();
     }
 
-    inline InvalidDataTypeError::DataType getDataType(const stdc::JsonValue &value) {
+    inline InvalidDataTypeError::DataType getDataType(const stdc::json::Value &value) {
         switch (value.type()) {
-            case stdc::JsonValue::Bool:
+            case stdc::json::Type::Bool:
                 return InvalidDataTypeError::Bool;
-            case stdc::JsonValue::Int:
-            case stdc::JsonValue::Double:
+            case stdc::json::Type::Int:
+            case stdc::json::Type::Double:
                 return isInteger(value.toDouble()) ? InvalidDataTypeError::Integer : InvalidDataTypeError::Double;
-            case stdc::JsonValue::String:
+            case stdc::json::Type::String:
                 return InvalidDataTypeError::String;
-            case stdc::JsonValue::Array:
+            case stdc::json::Type::Array:
                 return InvalidDataTypeError::Array;
-            case stdc::JsonValue::Object:
+            case stdc::json::Type::Object:
                 return InvalidDataTypeError::Object;
             default:
                 return InvalidDataTypeError::Null;
         }
     }
 
-    inline bool fromJsonStringHelper(const stdc::JsonValue &value, std::string &out, const JsonSerializationContext &context) {
+    inline bool fromJsonStringHelper(const stdc::json::Value &value, std::string &out, const JsonSerializationContext &context) {
         if (!(context.options & Serializer::CheckError)) {
             out = value.toString();
             return true;
@@ -149,7 +149,7 @@ namespace opendspx::impl {
     }
 
     template <auto minimum_ = std::nullopt, auto maximum_ = std::nullopt>
-    bool fromJsonDoubleHelperWithConstraint(const stdc::JsonValue &value, double &out, const JsonSerializationContext &context) {
+    bool fromJsonDoubleHelperWithConstraint(const stdc::json::Value &value, double &out, const JsonSerializationContext &context) {
         const std::optional<double> minimum = minimum_;
         const std::optional<double> maximum = maximum_;
         if (!(context.options & Serializer::CheckError)) {
@@ -184,7 +184,7 @@ namespace opendspx::impl {
     }
 
     template <auto minimum_ = std::nullopt, auto maximum_ = std::nullopt>
-    bool fromJsonIntHelperWithConstraint(const stdc::JsonValue &value, int &out, const JsonSerializationContext &context) {
+    bool fromJsonIntHelperWithConstraint(const stdc::json::Value &value, int &out, const JsonSerializationContext &context) {
         const std::optional<int> minimum = minimum_;
         const std::optional<int> maximum = maximum_;
         if (!(context.options & Serializer::CheckError)) {
@@ -218,7 +218,7 @@ namespace opendspx::impl {
         return ok;
     }
 
-    inline bool fromJsonBoolHelper(const stdc::JsonValue &value, bool &out, const JsonSerializationContext &context) {
+    inline bool fromJsonBoolHelper(const stdc::json::Value &value, bool &out, const JsonSerializationContext &context) {
         if (!(context.options & Serializer::CheckError)) {
             out = value.toBool();
             return true;
@@ -242,7 +242,7 @@ namespace opendspx::impl {
 
         static constexpr InvalidDataTypeError::DataType Flag = std::is_same_v<K, const char *> ? InvalidDataTypeError::String : InvalidDataTypeError::Integer;
 
-        static EnumType enumKeyOf(const stdc::JsonValue &value) {
+        static EnumType enumKeyOf(const stdc::json::Value &value) {
             if constexpr (std::is_same_v<EnumType, std::string>) {
                 return value.toString();
             } else {
@@ -250,7 +250,7 @@ namespace opendspx::impl {
             }
         }
 
-        bool operator()(const stdc::JsonValue &value, T &out, const JsonSerializationContext &context) const {
+        bool operator()(const stdc::json::Value &value, T &out, const JsonSerializationContext &context) const {
             if (!(context.options & Serializer::CheckError)) {
                 if (auto actualType = getDataType(value); actualType != Flag) {
                     out = {};
@@ -295,7 +295,7 @@ namespace opendspx::impl {
     };
 
     template <typename T, auto fromJson>
-    bool fromJsonArrayHelper(const stdc::JsonValue &json, std::vector<T> &list, const JsonSerializationContext &context) {
+    bool fromJsonArrayHelper(const stdc::json::Value &json, std::vector<T> &list, const JsonSerializationContext &context) {
         list.clear();
         auto &errors = context.errors;
         auto options = context.options;
@@ -321,7 +321,7 @@ namespace opendspx::impl {
 
     // For a property whose declared type is an object rather than any value, so the object has to
     // be handed over rather than pointed at
-    inline bool fromJsonObjectValueHelper(const stdc::JsonValue &value, stdc::JsonObject &out, const JsonSerializationContext &context) {
+    inline bool fromJsonObjectValueHelper(const stdc::json::Value &value, stdc::json::Object &out, const JsonSerializationContext &context) {
         if (!(context.options & Serializer::CheckError)) {
             out = value.toObject();
             return true;
@@ -335,10 +335,10 @@ namespace opendspx::impl {
         return true;
     }
 
-    // The object is handed back by pointer rather than by value, because a JsonValue owns its
+    // The object is handed back by pointer rather than by value, because a json::Value owns its
     // children and copying one here would copy the whole subtree at every level of nesting.
     // A value that is not an object yields the shared empty object, so the caller never sees null.
-    inline bool fromJsonObjectHelper(const stdc::JsonValue &value, const stdc::JsonObject *&out, const JsonSerializationContext &context) {
+    inline bool fromJsonObjectHelper(const stdc::json::Value &value, const stdc::json::Object *&out, const JsonSerializationContext &context) {
         out = &value.toObject();
         if (!(context.options & Serializer::CheckError)) {
             return true;
@@ -355,7 +355,7 @@ namespace opendspx::impl {
         explicit fromJsonObjectHelperWithPropertyCheck(std::array<const char *, N> &&properties) : properties(properties) {
         }
 
-        bool operator()(const stdc::JsonValue &value, const stdc::JsonObject *&out, const JsonSerializationContext &context) const {
+        bool operator()(const stdc::json::Value &value, const stdc::json::Object *&out, const JsonSerializationContext &context) const {
             out = &value.toObject();
             if (!(context.options & Serializer::CheckError)) {
                 return true;
@@ -378,8 +378,8 @@ namespace opendspx::impl {
             if (!(context.options & Serializer::TolerateRedundantProperty) && obj.size() + missingProperties.size() > properties.size()) {
                 for (auto it = obj.begin(); it != obj.end(); ++it) {
                     if (!std::ranges::any_of(properties, [it](const auto &property) {
-                        return it->first == property;
-                    })) {
+                            return it->first == property;
+                        })) {
                         redundantProperties.push_back(it->first);
                     }
                 }

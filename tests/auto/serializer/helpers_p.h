@@ -43,9 +43,9 @@ namespace opendspx::test {
         return Serializer::deserialize(in, errors, options);
     }
 
-    inline stdc::JsonValue parse(std::string_view text) {
-        stdc::JsonParseError error;
-        auto value = stdc::JsonValue::fromJson(text, false, &error);
+    inline stdc::json::Value parse(std::string_view text) {
+        stdc::json::ParseError error;
+        auto value = stdc::json::Value::fromJson(text, false, &error);
         BOOST_REQUIRE_MESSAGE(!error, "the test's own JSON does not parse: " << error.message());
         return value;
     }
@@ -93,7 +93,7 @@ namespace opendspx::test {
         model.content.timeline.tempos = {Tempo{0, 120.0}, Tempo{1920, 87.5}};
         model.content.timeline.timeSignatures = {TimeSignature{0, 3, 4}, TimeSignature{4, 7, 8}};
         model.content.timeline.labels = {Label{0, "intro"}, Label{1920, "verse"}};
-        model.content.workspace["app"] = stdc::JsonObject{{"zoom", 1.5}, {"page", 2}};
+        model.content.workspace["app"] = stdc::json::Object{{"zoom", 1.5}, {"page", 2}};
 
         Note note;
         note.pos = 0;
@@ -113,14 +113,14 @@ namespace opendspx::test {
         note.vibrato.offset = 1;
         note.vibrato.points.amp = {ControlPoint{0.0, 0.0}, ControlPoint{1.0, 1.0}};
         note.vibrato.points.freq = {ControlPoint{0.0, 1.0}};
-        note.workspace["note"] = stdc::JsonObject{{"marked", true}};
+        note.workspace["note"] = stdc::json::Object{{"marked", true}};
 
         auto singing = std::make_shared<SingingClip>();
         singing->name = "vocal";
         singing->time = ClipTime{0, 1920, 0, 1920};
         singing->control.gain = 0.5;
         singing->notes = {note};
-        singing->workspace["clip"] = stdc::JsonObject{{"colour", "red"}};
+        singing->workspace["clip"] = stdc::json::Object{{"colour", "red"}};
 
         Param pitch;
         pitch.original = {std::make_shared<ParamCurveFree>(0, 5, std::vector<int>{1, 2, 3})};
@@ -150,7 +150,7 @@ namespace opendspx::test {
         track.control.pan = -0.5;
         track.control.solo = true;
         track.clips = {singing, audio};
-        track.workspace["track"] = stdc::JsonObject{{"height", 120}};
+        track.workspace["track"] = stdc::json::Object{{"height", 120}};
 
         model.content.tracks = {track};
         return model;

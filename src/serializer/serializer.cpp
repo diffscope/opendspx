@@ -77,7 +77,7 @@ namespace opendspx {
     }
 
     void Serializer::serialize(std::ostream &out, const Model &model, SerializationErrorList &errors, Option options, bool compress) {
-        stdc::JsonValue doc;
+        stdc::json::Value doc;
         switch (model.version) {
             case Model::Version::V1:
                 doc = JsonConverterV1::toJson(model, errors, options);
@@ -138,8 +138,8 @@ namespace opendspx {
             return {};
         }
 
-        stdc::JsonParseError parseError;
-        auto doc = stdc::JsonValue::fromJson(text, false, &parseError);
+        stdc::json::ParseError parseError;
+        auto doc = stdc::json::Value::fromJson(text, false, &parseError);
         if (parseError) {
             errors.addError<JsonParseFailureError>(std::move(parseError));
             return {};

@@ -79,7 +79,7 @@ FixNamespaceComments: false
 ForEachMacros: [foreach, Q_FOREACH, BOOST_FOREACH, forever, Q_FOREVER, QBENCHMARK, QBENCHMARK_ONCE]
 IfMacros:
   - KJ_IF_MAYBE
-IncludeBlocks: Regroup
+IncludeBlocks: Preserve
 IncludeCategories:
   # Local headers
   - Regex: '^".*\.h"$'

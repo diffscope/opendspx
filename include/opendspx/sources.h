@@ -5,9 +5,9 @@
 #include <vector>
 
 #include <opendspx/dynamicmixinganchor.h>
+#include <opendspx/mixedsinger.h>
 #include <opendspx/singer.h>
 #include <opendspx/singlesinger.h>
-#include <opendspx/mixedsinger.h>
 
 namespace opendspx {
 

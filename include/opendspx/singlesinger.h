@@ -9,7 +9,7 @@
 namespace opendspx {
 
     struct SingleSinger : Singer {
-        SingleSinger(std::string id = {}, stdc::JsonValue extra = {}, Workspace workspace = {})
+        SingleSinger(std::string id = {}, stdc::json::Value extra = {}, Workspace workspace = {})
             : Singer(Type::Single, std::move(extra), std::move(workspace)), id(std::move(id)) {
         }
 

@@ -160,11 +160,11 @@ BOOST_AUTO_TEST_CASE(test_compressed_round_trip) {
 // change the file every time it was opened and saved.
 BOOST_AUTO_TEST_CASE(test_number_form_survives_a_round_trip) {
     Model model;
-    model.content.workspace["k"] = stdc::JsonObject{
-        {"i", stdc::JsonValue(1)},
-        {"d", stdc::JsonValue(1.0)},
-        {"negative", stdc::JsonValue(-7)},
-        {"big", stdc::JsonValue(std::int64_t(9007199254740993))},
+    model.content.workspace["k"] = stdc::json::Object{
+        {"i", stdc::json::Value(1)},
+        {"d", stdc::json::Value(1.0)},
+        {"negative", stdc::json::Value(-7)},
+        {"big", stdc::json::Value(std::int64_t(9007199254740993))},
     };
 
     SerializationErrorList errors;
@@ -220,7 +220,7 @@ BOOST_AUTO_TEST_CASE(test_parse_failure_says_where) {
 
     const auto failure = errorAs<JsonParseFailureError>(errors[0]);
     BOOST_CHECK_EQUAL(static_cast<int>(failure->code()),
-                      static_cast<int>(stdc::JsonParseError::UnexpectedToken));
+                      static_cast<int>(stdc::json::ParseError::UnexpectedToken));
     BOOST_CHECK_EQUAL(failure->line(), 2);
     BOOST_CHECK_EQUAL(failure->column(), 3);
     BOOST_CHECK_EQUAL(failure->offset(), 23);
@@ -231,16 +231,16 @@ BOOST_AUTO_TEST_CASE(test_parse_failure_says_where) {
 
 // Each of the parser's codes reaches the caller as itself rather than collapsing into one.
 BOOST_AUTO_TEST_CASE(test_parse_failure_codes) {
-    const std::pair<const char *, stdc::JsonParseError::Code> cases[] = {
-        {"{\"version\":", stdc::JsonParseError::UnexpectedEnd},
-        {"{\"version\":01}", stdc::JsonParseError::IllegalNumber},
-        {"{\"version\":\"\\q\"}", stdc::JsonParseError::IllegalEscape},
-        {"{\"version\":\"a\tb\"}", stdc::JsonParseError::IllegalString},
-        {"{\"version\":\"1.0.0\"} trailing", stdc::JsonParseError::TrailingContent},
+    const std::pair<const char *, stdc::json::ParseError::Code> cases[] = {
+        {"{\"version\":", stdc::json::ParseError::UnexpectedEnd},
+        {"{\"version\":01}", stdc::json::ParseError::IllegalNumber},
+        {"{\"version\":\"\\q\"}", stdc::json::ParseError::IllegalEscape},
+        {"{\"version\":\"a\tb\"}", stdc::json::ParseError::IllegalString},
+        {"{\"version\":\"1.0.0\"} trailing", stdc::json::ParseError::TrailingContent},
         // A comment is called out by name only where a value was expected. One after the whole
         // document is trailing content, comments enabled or not, so it stays that.
-        {"{\"version\":/* c */\"1.0.0\"}", stdc::JsonParseError::CommentNotAllowed},
-        {"{\"version\":\"1.0.0\"} /* c */", stdc::JsonParseError::TrailingContent},
+        {"{\"version\":/* c */\"1.0.0\"}", stdc::json::ParseError::CommentNotAllowed},
+        {"{\"version\":\"1.0.0\"} /* c */", stdc::json::ParseError::TrailingContent},
     };
 
     for (const auto &[text, code] : cases) {

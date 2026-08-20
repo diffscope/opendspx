@@ -16,11 +16,11 @@ namespace opendspx {
             Mixed,
         };
         Type type;
-        stdc::JsonValue extra;
+        stdc::json::Value extra;
         Workspace workspace;
 
     protected:
-        Singer(Type type, stdc::JsonValue extra = {}, Workspace workspace = {})
+        Singer(Type type, stdc::json::Value extra = {}, Workspace workspace = {})
             : type(type), extra(std::move(extra)), workspace(std::move(workspace)) {
         }
     };
